@@ -31,7 +31,7 @@ npm run dev
 
 ### 3. Live Project (Vercel Deployment)
 
-🌐 **Live Website:** [View Project](YOUR_VERCEL_LIVE_LINK)
+🌐 **Live Website:** [View Project](https://cyber-threat-sharing-portal.vercel.app/)
 
 ---<img width="1907" height="2374" alt="screencapture-localhost-5173-2026-09-20-12_37_01" src="https://github.com/user-attachments/assets/12d38b96-e23a-4ea9-be46-e5bc0154d9da" />
 <img width="1907" height="1524" alt="screencapture-localhost-5173-feed-2026-09-20-12_37_44" src="https://github.com/user-attachments/assets/99d5d428-551c-49ad-b851-2af26d36abd3" />
