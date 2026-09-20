@@ -31,7 +31,8 @@ npm run dev
 ```
 *(Runs on `http://localhost:5173`)*
 
----
+---<img width="1907" height="2374" alt="screencapture-localhost-5173-2026-09-20-12_37_01" src="https://github.com/user-attachments/assets/12d38b96-e23a-4ea9-be46-e5bc0154d9da" />
+<img width="1907" height="1524" alt="screencapture-localhost-5173-feed-2026-09-20-12_37_44" src="https://github.com/user-attachments/assets/99d5d428-551c-49ad-b851-2af26d36abd3" />
 
-## License
-ISC
+<img width="1907" height="1106" alt="screencapture-localhost-5173-report-2026-09-20-12_38_07" src="https://github.com/user-attachments/assets/83e08aa1-3098-453d-9216-99d431415bc3" />
+
