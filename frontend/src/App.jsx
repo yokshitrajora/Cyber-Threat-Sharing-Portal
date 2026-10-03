@@ -7,11 +7,22 @@ import ReportForm from './pages/ReportForm';
 import LiveFeed from './pages/LiveFeed';
 import Analytics from './pages/Analytics';
 import ParticleWaveBackground from './components/ParticleWaveBackground';
+import Landing from './pages/Landing';
 import { useThreats } from './hooks/useThreats';
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
   const { threats, addThreat, updateStatus, removeThreat, isLiveConnected } = useThreats();
+
+  if (!userRole) {
+    return (
+      <div className="bg-transparent text-slate-100 font-sans relative overflow-x-hidden w-full min-h-screen">
+        <ParticleWaveBackground />
+        <Landing onLogin={setUserRole} />
+      </div>
+    );
+  }
 
   return (
     <BrowserRouter>
@@ -23,6 +34,8 @@ function App() {
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
+          userRole={userRole}
+          setUserRole={setUserRole}
         />
 
         {/* Main Content Area (Offset for Desktop Sidebar) */}
@@ -38,7 +51,7 @@ function App() {
             <Routes>
               <Route 
                 path="/" 
-                element={<Console threats={threats} onUpdateStatus={updateStatus} onRemoveThreat={removeThreat} isLiveConnected={isLiveConnected} />} 
+                element={<Console threats={threats} onUpdateStatus={updateStatus} onRemoveThreat={removeThreat} isLiveConnected={isLiveConnected} userRole={userRole} />} 
               />
               <Route 
                 path="/report" 
@@ -46,7 +59,7 @@ function App() {
               />
               <Route 
                 path="/feed" 
-                element={<LiveFeed threats={threats} onUpdateStatus={updateStatus} onRemoveThreat={removeThreat} isLiveConnected={isLiveConnected} />} 
+                element={<LiveFeed threats={threats} onUpdateStatus={updateStatus} onRemoveThreat={removeThreat} isLiveConnected={isLiveConnected} userRole={userRole} />} 
               />
               <Route 
                 path="/analytics" 

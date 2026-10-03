@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { SYSTEM_HEALTH } from '../data/mockThreats';
 
-export default function Sidebar({ isOpen, onClose }) {
+export default function Sidebar({ isOpen, onClose, userRole, setUserRole }) {
   return (
     <>
       {/* Mobile Overlay */}
@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onClose }) {
         </div>
 
         {/* Navigation Section */}
-        <div className="flex-1 px-3 py-5 space-y-6 overflow-y-auto font-sans">
+        <div className="flex-1 px-3 py-5 space-y-6 overflow-y-auto font-sans min-h-0">
           
           <div>
             <span className="block text-[10px] font-mono uppercase tracking-widest text-slate-400 px-3 mb-3 font-bold">
@@ -155,16 +155,26 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Bottom Operator Profile Card */}
         <div className="p-3 border-t border-white/10 bg-black/40">
-          <div className="flex items-center gap-3 p-2.5 rounded-xl bg-white/5 border border-white/12 backdrop-blur-md">
-            <div className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center font-bold text-xs border border-white/30 shadow-xs">
-              OP
+          <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-white/5 border border-white/12 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center font-bold text-xs border border-white/30 shadow-xs">
+                OP
+              </div>
+              <div className="flex-1 truncate">
+                <span className="block text-xs font-bold text-white truncate">
+                  {userRole === 'sys_admin' ? 'System Admin' : userRole === 'org_admin' ? 'Org Admin' : 'Standard User'}
+                </span>
+                <span className="block text-[10px] font-sans text-slate-400 font-semibold truncate">
+                  {userRole === 'sys_admin' ? 'Full Access' : userRole === 'org_admin' ? 'Verified Partner' : 'Community Access'}
+                </span>
+              </div>
             </div>
-            <div className="flex-1 truncate">
-              <span className="block text-xs font-bold text-white truncate">SOC Lead Operator</span>
-              <span className="block text-[10px] font-sans text-slate-400 font-semibold truncate">
-                Security Operations
-              </span>
-            </div>
+            <button 
+              onClick={() => setUserRole(null)}
+              className="w-full bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 rounded-md text-[10px] font-bold p-1.5 transition-colors"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
 

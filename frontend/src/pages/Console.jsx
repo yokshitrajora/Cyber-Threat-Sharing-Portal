@@ -3,7 +3,7 @@ import ThreatTimelineChart from '../components/ThreatTimelineChart';
 import RiskDistributionChart from '../components/RiskDistributionChart';
 import IncidentStreamTable from '../components/IncidentStreamTable';
 
-export default function Console({ threats, onUpdateStatus, onRemoveThreat, isLiveConnected }) {
+export default function Console({ threats, onUpdateStatus, onRemoveThreat, isLiveConnected, userRole }) {
   return (
     <div className="space-y-6">
       
@@ -46,6 +46,7 @@ export default function Console({ threats, onUpdateStatus, onRemoveThreat, isLiv
         extraThreats={threats} 
         onUpdateStatus={onUpdateStatus} 
         onRemoveThreat={onRemoveThreat} 
+        userRole={userRole}
       />
 
     </div>
