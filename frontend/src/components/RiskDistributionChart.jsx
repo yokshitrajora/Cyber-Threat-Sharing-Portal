@@ -19,7 +19,7 @@ export default function RiskDistributionChart() {
           setIsLive(true);
         }
       } catch {
-        // Fallback to CATEGORY_BREAKDOWN if offline
+        // Fallback
       }
     }
     loadCategories();
@@ -27,21 +27,21 @@ export default function RiskDistributionChart() {
   }, []);
 
   return (
-    <div className="card-3d rounded-2xl p-5 space-y-4">
+    <div className="card-glass rounded-[28px] p-6 space-y-5">
       
-      <div className="border-b border-white/10 pb-4 flex justify-between items-center">
+      <div className="border-b border-slate-200/60 pb-4 flex justify-between items-center">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-sans">
+            <h3 className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
               Vector Classification
             </h3>
             {isLive && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Live SQLite Data"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="Live SQLite Data"></span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">Threat distribution across active vectors.</p>
+          <p className="text-xs text-slate-500 mt-0.5">Threat distribution across active vectors.</p>
         </div>
-        <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-white/10 text-slate-200 border border-white/20 font-bold backdrop-blur-md">
+        <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-white/80 text-slate-600 border border-slate-200 font-bold shadow-xs">
           {categories.length} Categories
         </span>
       </div>
@@ -54,47 +54,53 @@ export default function RiskDistributionChart() {
               data={categories}
               cx="50%"
               cy="50%"
-              innerRadius={52}
-              outerRadius={75}
+              innerRadius={54}
+              outerRadius={78}
               paddingAngle={4}
               dataKey="value"
             >
               {categories.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} stroke="rgba(10, 14, 24, 0.8)" strokeWidth={2} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={entry.color} 
+                  stroke="#ffffff" 
+                  strokeWidth={2} 
+                />
               ))}
             </Pie>
             <Tooltip
               contentStyle={{
-                backgroundColor: 'rgba(10, 14, 24, 0.95)',
-                borderRadius: '12px',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: '#ffffff',
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(12px)',
+                borderRadius: '16px',
+                border: '1px solid rgba(226, 232, 240, 0.9)',
+                color: '#0f172a',
                 fontSize: '12px',
-                fontFamily: 'monospace',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)'
+                fontFamily: 'sans-serif',
+                boxShadow: '0 10px 25px -5px rgba(15, 23, 42, 0.1)'
               }}
             />
           </PieChart>
         </ResponsiveContainer>
 
         {/* Center Label inside Donut */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none font-mono">
-          <span className="text-xl font-extrabold text-white">{totalCount.toLocaleString()}</span>
-          <span className="text-[10px] uppercase text-slate-400 font-semibold">Total Threat Log</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          <span className="text-2xl font-extrabold text-slate-900 font-sans tracking-tight">{totalCount.toLocaleString()}</span>
+          <span className="text-[10px] uppercase text-slate-400 font-semibold tracking-wider">Total Threat Log</span>
         </div>
       </div>
 
       {/* Category Legends */}
-      <div className="space-y-2 pt-1 font-mono text-xs">
+      <div className="space-y-2 pt-1 text-xs">
         {categories.map((item) => (
-          <div key={item.name} className="flex justify-between items-center p-2.5 rounded-xl bg-black/40 border border-white/10 backdrop-blur-md">
-            <div className="flex items-center gap-2 truncate pr-2">
+          <div key={item.name} className="flex justify-between items-center p-2.5 rounded-2xl bg-white/70 border border-white hover:bg-white/90 transition shadow-xs">
+            <div className="flex items-center gap-2.5 truncate pr-2">
               <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }}></span>
-              <span className="text-slate-200 font-sans truncate text-xs font-medium">{item.name}</span>
+              <span className="text-slate-700 font-sans truncate text-xs font-semibold">{item.name}</span>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-slate-400 text-[11px] font-semibold">{item.count}</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white bg-white/10 border border-white/20">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold text-slate-800 bg-slate-100 border border-slate-200">
                 {item.value}%
               </span>
             </div>

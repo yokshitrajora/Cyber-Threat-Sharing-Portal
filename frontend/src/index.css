@@ -1,31 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --color-cyber-dark: #07090e;
-  --color-cyber-card: rgba(14, 18, 27, 0.75);
-  --color-cyber-card-hover: rgba(22, 28, 42, 0.9);
-  --color-cyber-border: rgba(255, 255, 255, 0.1);
-  --color-cyber-border-light: rgba(255, 255, 255, 0.2);
+  --color-synthex-bg: #edf2f8;
+  --color-synthex-card: rgba(255, 255, 255, 0.65);
+  --color-synthex-card-hover: rgba(255, 255, 255, 0.82);
+  --color-synthex-border: rgba(255, 255, 255, 0.85);
+  --color-synthex-border-subtle: rgba(226, 232, 240, 0.8);
+  
+  --color-synthex-dark: #111827;
+  --color-synthex-slate: #475569;
+  --color-synthex-muted: #94a3b8;
 
-  --color-risk-critical: #e11d48;
-  --color-risk-high: #ea580c;
-  --color-risk-med: #d97706;
-  --color-risk-low: #059669;
+  --color-risk-critical: #f43f5e;
+  --color-risk-high: #f97316;
+  --color-risk-med: #eab308;
+  --color-risk-low: #10b981;
 }
 
 @layer base {
   body {
-    background-color: #06080d;
-    color: #f8fafc;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #e8edf5 0%, #edf2f9 40%, #e2eaf4 100%);
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
     overflow-x: hidden;
-    perspective: 1200px;
   }
 
   ::-webkit-scrollbar {
@@ -34,163 +37,255 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: #06080d;
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.18);
-    border-radius: 3px;
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.35);
+    background: rgba(100, 116, 139, 0.5);
   }
 
   ::selection {
-    background-color: #ffffff;
-    color: #06080d;
+    background-color: #0f172a;
+    color: #ffffff;
   }
 }
 
-/* 3D Web Page & Metallic Components */
+/* Synthex Glassmorphic Design System */
 @layer components {
 
-  /* 3D Glass Card Container with Top Bevel Specular Highlight & Depth */
+  /* Core Synthex Frosted Glass Container */
+  .card-glass,
   .card-3d {
-    background: linear-gradient(145deg, rgba(20, 26, 38, 0.65) 0%, rgba(9, 12, 19, 0.8) 100%);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-top: 1px solid rgba(255, 255, 255, 0.28);
-    border-left: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.2),
-      inset 0 -1px 2px rgba(0, 0, 0, 0.6),
-      0 12px 30px -10px rgba(0, 0, 0, 0.6),
-      0 1px 3px rgba(0, 0, 0, 0.4);
-    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
-    transform-style: preserve-3d;
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.46) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 20px 40px -15px rgba(30, 41, 59, 0.07),
+      0 4px 12px -2px rgba(30, 41, 59, 0.03),
+      inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  .card-glass:hover,
   .card-3d:hover {
-    transform: translateY(-3px) translateZ(5px);
-    border-color: rgba(255, 255, 255, 0.25);
-    border-top-color: rgba(255, 255, 255, 0.45);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.35),
-      0 20px 40px -12px rgba(0, 0, 0, 0.75),
-      0 0 20px rgba(255, 255, 255, 0.04);
+    background: linear-gradient(140deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.58) 100%);
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+      0 26px 50px -16px rgba(30, 41, 59, 0.12),
+      0 6px 18px -3px rgba(30, 41, 59, 0.05),
+      inset 0 1px 2px 0 rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
   }
 
-  /* 3D Primary Shiny Metallic White/Silver Button */
-  .btn-3d-primary {
-    background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 45%, #cbd5e1 100%);
-    color: #0b0f17;
-    font-weight: 700;
-    font-family: 'Inter', sans-serif;
-    border: 1px solid #ffffff;
-    border-bottom: 2px solid #94a3b8;
-    border-radius: 9999px;
-    box-shadow: 
-      inset 0 1px 0 #ffffff,
-      inset 0 -1px 2px rgba(0, 0, 0, 0.25),
-      0 4px 12px rgba(0, 0, 0, 0.3),
-      0 0 12px rgba(255, 255, 255, 0.2);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+  /* Synthex Highlighted Glass Accent Card (with subtle luminous purple/blue top glow) */
+  .card-synthex-hero {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(245, 248, 255, 0.55) 100%);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1.5px solid rgba(255, 255, 255, 0.95);
     position: relative;
-    overflow: hidden;
-    cursor: pointer;
+    box-shadow:
+      0 24px 48px -12px rgba(30, 41, 59, 0.09),
+      0 8px 16px -4px rgba(99, 102, 241, 0.05),
+      inset 0 1px 1px rgba(255, 255, 255, 1);
   }
 
-  .btn-3d-primary::after {
+  .card-synthex-hero::before {
     content: '';
     position: absolute;
     top: 0;
-    left: -100%;
-    width: 50%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
-    transition: 0.4s;
-  }
-
-  .btn-3d-primary:hover::after {
-    left: 140%;
-  }
-
-  .btn-3d-primary:hover {
-    background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
-    transform: translateY(-2px);
-    box-shadow: 
-      inset 0 1px 0 #ffffff,
-      0 8px 20px rgba(0, 0, 0, 0.4),
-      0 0 24px rgba(255, 255, 255, 0.35);
-  }
-
-  .btn-3d-primary:active {
-    transform: translateY(1px);
-    border-bottom-width: 1px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-  }
-
-  /* 3D Secondary Translucent Metallic Button */
-  .btn-3d-secondary {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.03) 100%);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    color: #f1f5f9;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+    left: 15%;
+    width: 40%;
+    height: 45%;
+    background: radial-gradient(circle, rgba(165, 180, 252, 0.3) 0%, rgba(199, 210, 254, 0.05) 60%, transparent 80%);
+    filter: blur(25px);
+    pointer-events: none;
     border-radius: 9999px;
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.3),
-      0 4px 12px rgba(0, 0, 0, 0.35);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Floating Peeking Card (from Synthex UI reference image) */
+  .peek-card {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 0 10px 25px -6px rgba(30, 41, 59, 0.09), 0 2px 6px rgba(30, 41, 59, 0.04);
+    border-radius: 18px;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .peek-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 30px -8px rgba(30, 41, 59, 0.14);
+  }
+
+  /* Synthex Filter Pill (e.g. Device Type v, Traffic Source v) */
+  .pill-filter {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.7);
+    color: #334155;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 0.4rem;
+    box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     cursor: pointer;
   }
 
-  .btn-3d-secondary:hover {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.08) 100%);
-    border-color: rgba(255, 255, 255, 0.4);
-    border-top-color: rgba(255, 255, 255, 0.7);
-    color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 
-      inset 0 1px 0 rgba(255, 255, 255, 0.5),
-      0 8px 18px rgba(0, 0, 0, 0.45);
+  .pill-filter:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -3px rgba(15, 23, 42, 0.08), inset 0 1px 0 #ffffff;
   }
 
+  /* Synthex Primary Action Button */
+  .btn-synthex-primary,
+  .btn-3d-primary {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: -0.01em;
+    padding: 0.55rem 1.25rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(15, 23, 42, 0.9);
+    box-shadow:
+      0 6px 18px -4px rgba(15, 23, 42, 0.25),
+      0 2px 6px -1px rgba(15, 23, 42, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-synthex-primary:hover,
+  .btn-3d-primary:hover {
+    background: #1e293b;
+    transform: translateY(-1px);
+    box-shadow:
+      0 10px 24px -5px rgba(15, 23, 42, 0.32),
+      0 4px 8px -2px rgba(15, 23, 42, 0.18);
+  }
+
+  .btn-synthex-primary:active,
+  .btn-3d-primary:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 8px -2px rgba(15, 23, 42, 0.25);
+  }
+
+  /* Synthex Secondary Frosted Pill Button */
+  .btn-synthex-secondary,
+  .btn-3d-secondary {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+    border-radius: 9999px;
+    padding: 0.5rem 1.1rem;
+    box-shadow:
+      0 4px 12px -2px rgba(15, 23, 42, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .btn-synthex-secondary:hover,
+  .btn-3d-secondary:hover {
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
+    border-color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow:
+      0 8px 18px -3px rgba(15, 23, 42, 0.09),
+      inset 0 1px 0 #ffffff;
+  }
+
+  .btn-synthex-secondary:active,
   .btn-3d-secondary:active {
     transform: translateY(1px);
-    border-bottom-width: 1px;
   }
 
-  /* 3D Dark Inset Input Box */
+  /* Synthex Circular Icon Action Button (like the Back button or 3-dots in reference) */
+  .btn-synthex-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .btn-synthex-icon:hover {
+    background: #ffffff;
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px -3px rgba(15, 23, 42, 0.08);
+  }
+
+  /* Synthex Frosted Input Box */
+  .input-synthex,
   .input-3d {
-    background: rgba(8, 11, 18, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    border-top: 1px solid rgba(0, 0, 0, 0.5);
-    box-shadow: 
-      inset 0 2px 5px rgba(0, 0, 0, 0.5),
-      0 1px 0 rgba(255, 255, 255, 0.1);
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid rgba(203, 213, 225, 0.7);
+    color: #0f172a;
+    box-shadow:
+      inset 0 1px 3px rgba(15, 23, 42, 0.04),
+      0 2px 6px -1px rgba(15, 23, 42, 0.02);
     transition: all 0.2s ease;
   }
 
+  .input-synthex:focus,
   .input-3d:focus {
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 
-      inset 0 2px 4px rgba(0, 0, 0, 0.4),
-      0 0 15px rgba(255, 255, 255, 0.15);
+    background: #ffffff;
+    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow:
+      0 0 0 3px rgba(99, 102, 241, 0.12),
+      0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    outline: none;
+  }
+
+  /* Segmented Pill Group Container */
+  .pill-group {
+    background: rgba(226, 232, 240, 0.55);
+    padding: 0.25rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
   }
 }

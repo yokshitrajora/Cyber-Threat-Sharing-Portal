@@ -6,7 +6,7 @@ export default function ParticleWaveBackground() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false });
+    const ctx = canvas.getContext('2d');
     let animationFrameId;
 
     let width = (canvas.width = window.innerWidth);
@@ -20,138 +20,53 @@ export default function ParticleWaveBackground() {
 
     window.addEventListener('resize', handleResize);
 
-    // 3D Parallax Stardust Particles (Layered Z-Depth)
-    const particleCount = Math.min(100, Math.floor((width * height) / 12000));
-    const particles = [];
-    for (let i = 0; i < particleCount; i++) {
-      const z = Math.random() * 3 + 0.5;
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        z,
-        radius: (Math.random() * 1.2 + 0.4) * (z * 0.7),
-        alpha: (Math.random() * 0.5 + 0.2) / (z * 0.7),
-        speedX: (Math.random() - 0.5) * 0.15 * z,
-        speedY: (Math.random() - 0.5) * 0.15 * z,
-        pulseSpeed: Math.random() * 0.015 + 0.005,
-      });
-    }
-    // Sort once on creation instead of every frame
-    particles.sort((a, b) => a.z - b.z);
-
-    // 3D Infinity Wave Stardust Ribbon Particles (optimized count for 60-120 FPS)
-    const waveParticleCount = 280;
-    const waveParticles = [];
-    for (let i = 0; i < waveParticleCount; i++) {
-      waveParticles.push({
-        t: Math.random() * Math.PI * 2,
-        offsetY: (Math.random() - 0.5) * 60,
-        offsetX: (Math.random() - 0.5) * 60,
-        speed: 0.0008 + Math.random() * 0.0008,
-        size: Math.random() * 1.5 + 0.5,
-        alpha: Math.random() * 0.5 + 0.25,
-      });
-    }
+    // Subtle drifting ambient gradient orbs for Synthex glassmorphism depth
+    const orbs = [
+      { x: width * 0.2, y: height * 0.25, r: 380, color: 'rgba(219, 234, 254, 0.45)', vx: 0.15, vy: 0.1 },
+      { x: width * 0.75, y: height * 0.2, r: 420, color: 'rgba(238, 242, 255, 0.55)', vx: -0.12, vy: 0.14 },
+      { x: width * 0.5, y: height * 0.7, r: 460, color: 'rgba(224, 231, 255, 0.4)', vx: 0.08, vy: -0.1 },
+      { x: width * 0.85, y: height * 0.8, r: 340, color: 'rgba(241, 245, 249, 0.6)', vx: -0.1, vy: -0.12 },
+    ];
 
     let time = 0;
 
     const render = () => {
-      time += 0.004;
+      time += 0.003;
 
-      // Deep dark 3D luxury gradient background
-      const bgGradient = ctx.createRadialGradient(
-        width / 2,
-        height * 0.4,
-        100,
-        width / 2,
-        height / 2,
-        Math.max(width, height) * 0.8
-      );
-      bgGradient.addColorStop(0, '#0c1019');
-      bgGradient.addColorStop(0.5, '#06080d');
-      bgGradient.addColorStop(1, '#030407');
-      ctx.fillStyle = bgGradient;
+      // Base luminous slate-tinted canvas
+      ctx.fillStyle = '#edf2f8';
       ctx.fillRect(0, 0, width, height);
 
-      // Render Layered 3D Background Particles
-      particles.forEach((p) => {
-        p.x += p.speedX;
-        p.y += p.speedY;
+      // Render smooth animated glowing ambient orbs
+      orbs.forEach((orb) => {
+        orb.x += orb.vx;
+        orb.y += orb.vy;
 
-        if (p.x < 0) p.x = width;
-        if (p.x > width) p.x = 0;
-        if (p.y < 0) p.y = height;
-        if (p.y > height) p.y = 0;
+        if (orb.x < -100) orb.x = width + 100;
+        if (orb.x > width + 100) orb.x = -100;
+        if (orb.y < -100) orb.y = height + 100;
+        if (orb.y > height + 100) orb.y = -100;
 
-        p.alpha += Math.sin(time * 2 + p.z) * p.pulseSpeed * 0.08;
-        const currentAlpha = Math.max(0.08, Math.min(0.75, p.alpha));
+        const g = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.r);
+        g.addColorStop(0, orb.color);
+        g.addColorStop(1, 'rgba(237, 242, 248, 0)');
 
+        ctx.fillStyle = g;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(240, 245, 255, ${currentAlpha})`;
+        ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Render 3D Floating Infinity Ribbon
-      const centerX = width / 2;
-      const centerY = height * 0.42;
-      const scaleX = Math.min(width * 0.44, 620);
-      const scaleY = Math.min(height * 0.26, 250);
-
-      // Ribbon ambient volumetric light glow
+      // Subtle diagonal frosted light reflection across the background
       ctx.save();
-      ctx.beginPath();
-      for (let theta = 0; theta <= Math.PI * 2; theta += 0.05) {
-        const x = centerX + scaleX * Math.sin(theta + time * 0.4);
-        const y = centerY + scaleY * Math.sin(theta + time * 0.4) * Math.cos(theta + time * 0.4);
-        if (theta === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
-      ctx.lineWidth = 120;
-      ctx.stroke();
+      const sheenGrad = ctx.createLinearGradient(0, 0, width, height);
+      sheenGrad.addColorStop(0, 'rgba(255, 255, 255, 0.35)');
+      sheenGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.1)');
+      sheenGrad.addColorStop(0.7, 'rgba(240, 245, 255, 0.25)');
+      sheenGrad.addColorStop(1, 'rgba(255, 255, 255, 0.4)');
+      ctx.fillStyle = sheenGrad;
+      ctx.fillRect(0, 0, width, height);
       ctx.restore();
-
-      // Ribbon Core Metallic Fluid Strand Layers (3 layers for high performance)
-      for (let layer = 0; layer < 3; layer++) {
-        ctx.beginPath();
-        const layerTime = time * 0.35 + layer * 0.25;
-        const layerScaleX = scaleX + layer * 8;
-        const layerScaleY = scaleY + layer * 4;
-
-        for (let theta = 0; theta <= Math.PI * 2; theta += 0.04) {
-          const waveShift = Math.sin(theta * 3 + layerTime) * 8;
-          const x = centerX + layerScaleX * Math.sin(theta) + waveShift;
-          const y = centerY + layerScaleY * Math.sin(theta) * Math.cos(theta) + waveShift * 0.5;
-
-          if (theta === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-
-        const alpha = 0.09 - layer * 0.02;
-        ctx.strokeStyle = `rgba(245, 248, 255, ${alpha})`;
-        ctx.lineWidth = 26 - layer * 6;
-        ctx.stroke();
-      }
-
-      // Ribbon Stardust Particles - Batched fast rendering
-      waveParticles.forEach((wp) => {
-        wp.t += wp.speed;
-        if (wp.t > Math.PI * 2) wp.t = 0;
-
-        const currentT = wp.t + time * 0.18;
-        const baseX = centerX + scaleX * Math.sin(currentT);
-        const baseY = centerY + scaleY * Math.sin(currentT) * Math.cos(currentT);
-
-        const x = baseX + wp.offsetX + Math.sin(time + wp.t * 3) * 6;
-        const y = baseY + wp.offsetY + Math.cos(time + wp.t * 3) * 6;
-
-        ctx.beginPath();
-        ctx.arc(x, y, wp.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${wp.alpha})`;
-        ctx.fill();
-      });
 
       animationFrameId = requestAnimationFrame(render);
     };

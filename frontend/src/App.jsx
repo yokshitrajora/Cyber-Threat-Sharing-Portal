@@ -15,18 +15,18 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-transparent text-slate-100 font-sans flex relative overflow-x-hidden">
-        {/* Animated 3D Particle & Volumetric Infinity Wave Canvas Background */}
+      <div className="min-h-screen bg-transparent text-slate-800 font-sans flex relative overflow-x-hidden">
+        {/* Animated Synthex Luminous Ambient Frosted Canvas */}
         <ParticleWaveBackground />
 
-        {/* Left Vertical Navigation Sidebar */}
+        {/* Left Floating Frosted Navigation Sidebar */}
         <Sidebar 
           isOpen={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
         />
 
         {/* Main Content Area (Offset for Desktop Sidebar) */}
-        <div className="flex-1 flex flex-col lg:pl-64 min-w-0 relative z-10">
+        <div className="flex-1 flex flex-col lg:pl-72 min-w-0 relative z-10 transition-all duration-300">
           
           {/* Topbar Header */}
           <Topbar 
@@ -34,7 +34,7 @@ function App() {
           />
 
           {/* Page Routing Views */}
-          <main className="flex-1 px-4 sm:px-6 py-6 max-w-7xl w-full mx-auto space-y-6">
+          <main className="flex-1 px-4 sm:px-8 py-7 max-w-7xl w-full mx-auto space-y-7">
             <Routes>
               <Route 
                 path="/" 
@@ -55,10 +55,17 @@ function App() {
             </Routes>
           </main>
 
-          {/* Footer Bar - Clean, minimal footer */}
-          <footer className="border-t border-white/10 bg-black/40 backdrop-blur-md py-4 text-xs font-sans text-slate-400">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 flex justify-between items-center">
-              <p>© {new Date().getFullYear()} Shield AI Threat Detection System.</p>
+          {/* Footer Bar - Clean, minimal frosted footer */}
+          <footer className="border-t border-white/60 bg-white/40 backdrop-blur-md py-4 text-xs font-sans text-slate-500">
+            <div className="max-w-7xl mx-auto px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center gap-2">
+              <p className="font-medium">© {new Date().getFullYear()} Shield AI Threat Detection System.</p>
+              <div className="flex items-center gap-4 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                  All Systems Operational
+                </span>
+                <span>threats.shieldcommunity.io</span>
+              </div>
             </div>
           </footer>
 
