@@ -37,11 +37,7 @@ export default function Sidebar({ isOpen, onClose, userRole, setUserRole }) {
         </div>
 
         {/* Navigation Section */}
-<<<<<<< HEAD
-        <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto font-sans">
-=======
-        <div className="flex-1 px-3 py-5 space-y-6 overflow-y-auto font-sans min-h-0">
->>>>>>> 27b3b5fe43dad9aa10269f4be5c349a159d5f9ac
+        <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto font-sans min-h-0">
           
           <div>
             <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 mb-2.5 font-bold">
@@ -162,40 +158,29 @@ export default function Sidebar({ isOpen, onClose, userRole, setUserRole }) {
         </div>
 
         {/* Bottom Operator Profile Card */}
-<<<<<<< HEAD
         <div className="p-4 border-t border-slate-200/60 bg-white/40">
-          <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/80 border border-white shadow-xs">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              OP
-            </div>
-            <div className="flex-1 truncate">
-              <span className="block text-xs font-bold text-slate-800 truncate">SOC Lead Operator</span>
-              <span className="block text-[11px] font-sans text-slate-400 font-medium truncate">
-                Security Operations
-              </span>
-=======
-        <div className="p-3 border-t border-white/10 bg-black/40">
-          <div className="flex flex-col gap-2 p-2.5 rounded-xl bg-white/5 border border-white/12 backdrop-blur-md">
+          <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-white/80 border border-white shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/15 text-white flex items-center justify-center font-bold text-xs border border-white/30 shadow-xs">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 text-white flex items-center justify-center font-bold text-xs shadow-xs">
                 OP
               </div>
               <div className="flex-1 truncate">
-                <span className="block text-xs font-bold text-white truncate">
+                <span className="block text-xs font-bold text-slate-800 truncate">
                   {userRole === 'sys_admin' ? 'System Admin' : userRole === 'org_admin' ? 'Org Admin' : 'Standard User'}
                 </span>
-                <span className="block text-[10px] font-sans text-slate-400 font-semibold truncate">
+                <span className="block text-[11px] font-sans text-slate-400 font-medium truncate">
                   {userRole === 'sys_admin' ? 'Full Access' : userRole === 'org_admin' ? 'Verified Partner' : 'Community Access'}
                 </span>
               </div>
->>>>>>> 27b3b5fe43dad9aa10269f4be5c349a159d5f9ac
             </div>
-            <button 
-              onClick={() => setUserRole(null)}
-              className="w-full bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 rounded-md text-[10px] font-bold p-1.5 transition-colors"
-            >
-              Sign Out
-            </button>
+            {setUserRole && (
+              <button 
+                onClick={() => setUserRole(null)}
+                className="w-full bg-rose-50 border border-rose-200/80 text-rose-600 hover:bg-rose-100 rounded-xl text-[10px] font-bold py-1.5 transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+            )}
           </div>
         </div>
 

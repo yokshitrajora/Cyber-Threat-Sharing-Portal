@@ -17,7 +17,7 @@ function App() {
 
   if (!userRole) {
     return (
-      <div className="bg-transparent text-slate-100 font-sans relative overflow-x-hidden w-full min-h-screen">
+      <div className="bg-transparent text-slate-800 font-sans relative overflow-x-hidden w-full min-h-screen">
         <ParticleWaveBackground />
         <Landing onLogin={setUserRole} />
       </div>
