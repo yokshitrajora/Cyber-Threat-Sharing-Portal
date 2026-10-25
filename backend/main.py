@@ -8,6 +8,7 @@ from app.db.session import init_db
 from app.api.v1.auth import router as auth_router
 from app.api.v1.threats import router as threats_router
 from app.api.v1.analytics import router as analytics_router
+from app.api.v1.digest import router as digest_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,18 +32,9 @@ app = FastAPI(
 )
 
 # CORS configuration
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://localhost:80",
-    "http://localhost",
-    "https://cyber-threat-sharing-portal.vercel.app"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.cors_origin_list,
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
@@ -53,6 +45,30 @@ app.add_middleware(
 app.include_router(auth_router, prefix=f"{settings.API_V1_STR}/auth", tags=["Authentication"])
 app.include_router(threats_router, prefix=f"{settings.API_V1_STR}/threats", tags=["Threat Intelligence"])
 app.include_router(analytics_router, prefix=f"{settings.API_V1_STR}/analytics", tags=["SOC Analytics"])
+app.include_router(digest_router, prefix=f"{settings.API_V1_STR}/digest", tags=["Weekly Email Digest"])
+
+@app.get("/health", tags=["Health & Diagnostics"])
+def health_check():
+    """Production healthcheck probe for load balancers and orchestrators."""
+    from app.db.session import SessionLocal
+    from sqlalchemy import text
+    from datetime import datetime, timezone
+    
+    db_status = "operational"
+    try:
+        db = SessionLocal()
+        db.execute(text("SELECT 1"))
+        db.close()
+    except Exception as e:
+        db_status = f"unhealthy: {str(e)}"
+
+    return {
+        "status": "healthy" if db_status == "operational" else "degraded",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "database": db_status,
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
 
 @app.get("/")
 def root():

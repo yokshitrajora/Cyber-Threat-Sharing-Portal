@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
-export default function Topbar({ onToggleSidebar }) {
+export default function Topbar({ onToggleSidebar, userRole }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { user, quickLogin } = useAuth();
+  const [roleMenuOpen, setRoleMenuOpen] = useState(false);
   
   const initialQuery = searchParams.get('search') || '';
   const [query, setQuery] = useState(initialQuery);
 
-  // Sync state if URL search query changes externally
   useEffect(() => {
     setQuery(searchParams.get('search') || '');
   }, [searchParams]);
@@ -51,7 +53,7 @@ export default function Topbar({ onToggleSidebar }) {
     <header className="bg-white/60 backdrop-blur-xl border-b border-white/80 sticky top-0 z-30 shadow-[0_4px_20px_-10px_rgba(15,23,42,0.03)]">
       <div className="px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
         
-        {/* Left Side: Mobile Menu Button, Circular Back Button & Search Bar */}
+        {/* Left Side: Mobile Menu Button, Back Button & Search Bar */}
         <div className="flex items-center gap-3 flex-1 max-w-xl">
           <button
             onClick={onToggleSidebar}
@@ -63,7 +65,6 @@ export default function Topbar({ onToggleSidebar }) {
             </svg>
           </button>
 
-          {/* Synthex Circular Back Action Button (as seen in Synthex UI) */}
           <button 
             onClick={() => navigate(-1)}
             className="hidden sm:inline-flex btn-synthex-icon text-slate-500 hover:text-slate-800"
@@ -91,7 +92,7 @@ export default function Topbar({ onToggleSidebar }) {
             {query && (
               <button
                 onClick={handleClear}
-                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 transition"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 transition cursor-pointer"
                 title="Clear search"
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,8 +103,51 @@ export default function Topbar({ onToggleSidebar }) {
           </div>
         </div>
 
-        {/* Right Side: Quick Action Button */}
+        {/* Right Side: Role Badge + Quick Action */}
         <div className="flex items-center gap-3 shrink-0">
+          {/* Interactive Role Switcher Pill */}
+          <div className="relative">
+            <button
+              onClick={() => setRoleMenuOpen(prev => !prev)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border transition cursor-pointer hover:shadow-sm ${
+                userRole === 'sys_admin' ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' :
+                userRole === 'org_admin' ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' :
+                'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+              }`}
+              title="Click to switch RBAC Role tier"
+            >
+              <span>{userRole === 'sys_admin' ? '⚡ System Admin' : userRole === 'org_admin' ? '🏢 Org Admin' : '👤 Standard User'}</span>
+              <span className="text-[8px] opacity-70">▼</span>
+            </button>
+
+            {roleMenuOpen && (
+              <div className="absolute right-0 mt-2 w-48 card-glass rounded-2xl p-1.5 border border-white shadow-xl z-50 animate-in fade-in duration-150">
+                <div className="px-3 py-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+                  Switch RBAC Tier
+                </div>
+                {[
+                  { id: 'standard', name: 'Standard User', icon: '👤', cls: 'text-blue-700 hover:bg-blue-50' },
+                  { id: 'org_admin', name: 'Org Admin', icon: '🏢', cls: 'text-purple-700 hover:bg-purple-50' },
+                  { id: 'sys_admin', name: 'System Admin', icon: '⚡', cls: 'text-rose-700 hover:bg-rose-50' }
+                ].map(r => (
+                  <button
+                    key={r.id}
+                    onClick={async () => {
+                      setRoleMenuOpen(false);
+                      try { await quickLogin(r.id); } catch (e) { console.error(e); }
+                    }}
+                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${
+                      userRole === r.id ? 'bg-slate-900 text-white font-bold' : r.cls
+                    }`}
+                  >
+                    <span>{r.icon} {r.name}</span>
+                    {userRole === r.id && <span className="text-[10px]">✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           <NavLink
             to="/report"
             className="btn-synthex-primary px-4 py-2 text-xs rounded-full shrink-0 shadow-sm flex items-center gap-1.5"

@@ -1,14 +1,15 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { RECENT_INCIDENTS } from '../data/mockThreats';
+import { reportSighting, reportFalseAlarm, verifyThreat, overrideFalsePositive } from '../api/threatApi';
 
-export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus, onRemoveThreat, userRole }) {
+export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus, onRemoveThreat, userRole, refreshThreats }) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterSeverity, setFilterSeverity] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedIncident, setSelectedIncident] = useState(null);
+  const [actionLoading, setActionLoading] = useState(null);
 
-  // Sync state if URL query parameter changes
   useEffect(() => {
     setSearchQuery(searchParams.get('search') || '');
   }, [searchParams]);
@@ -30,72 +31,112 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
     return raw.map(t => ({
       ...t,
       id: t.id || t.incident_code || `INC-${Math.floor(Math.random()*9000)+1000}`,
-      numericId: t.numericId,
+      numericId: t.numericId || t.numeric_id,
       severity: t.severity || (t.score >= 85 ? 'Critical' : t.score >= 60 ? 'High' : t.score >= 35 ? 'Medium' : 'Low'),
       score: t.score || 50,
-      aiConfidence: t.aiConfidence || `${Math.min(99.9, (88.0 + ((t.score || 50) * 0.11))).toFixed(1)}%`,
-      indicator: t.rawInput || t.indicator,
-      cleanIndicator: t.indicator,
-      type: t.type || 'URL',
+      aiConfidence: t.aiConfidence || t.ai_confidence || `${Math.min(99.9, (88.0 + ((t.score || 50) * 0.11))).toFixed(1)}%`,
+      indicator: t.rawInput || t.raw_input || t.indicator,
+      cleanIndicator: t.indicator || t.cleanIndicator,
+      type: t.type || t.indicator_type || 'URL',
       target: t.target || 'Auth Portal (443)',
       location: t.location || 'Autonomous Ingestion Node',
       status: t.status || 'Auto-Blocked',
       urgency: t.urgency || (t.score >= 85 ? 'Critical' : 'Normal'),
-      sightingsCount: t.sightings_count !== undefined ? t.sightings_count : (t.sightingsCount !== undefined ? t.sightingsCount : Math.floor(Math.random() * 8)),
-      falseAlarmsCount: t.false_alarms_count !== undefined ? t.false_alarms_count : (t.falseAlarmsCount || 0),
+      sightingsCount: t.sightings_count ?? t.sightingsCount ?? 0,
+      falseAlarmsCount: t.false_alarms_count ?? t.falseAlarmsCount ?? 0,
+      verified: t.verified ?? false,
       timestamp: t.timestamp || 'Just now',
-      sanitized: t.sanitizedParameters || []
+      sanitized: t.sanitizedParameters || t.sanitized_parameters || []
     }));
   }, [extraThreats]);
 
   const filteredIncidents = useMemo(() => {
     return allIncidents.filter((item) => {
       const matchesSeverity = filterSeverity === 'ALL' || item.severity === filterSeverity;
-      const matchesSearch = 
-        item.indicator.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchQuery.toLowerCase());
+      const q = searchQuery.toLowerCase();
+      const matchesSearch = !q ||
+        item.indicator.toLowerCase().includes(q) ||
+        item.type.toLowerCase().includes(q) ||
+        item.location.toLowerCase().includes(q) ||
+        item.id.toLowerCase().includes(q);
       return matchesSeverity && matchesSearch;
     });
   }, [allIncidents, filterSeverity, searchQuery]);
 
-  const renderSeverityBadge = (severity) => {
-    switch (severity) {
-      case 'Critical':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-rose-50 text-rose-600 border border-rose-200/80 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-            Critical
-          </span>
-        );
-      case 'High':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-200/80 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-            High
-          </span>
-        );
-      case 'Medium':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-yellow-50 text-yellow-700 border border-yellow-200/80 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-yellow-500"></span>
-            Medium
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200/80 shadow-xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            Low
-          </span>
-        );
+  const handleSighting = async () => {
+    if (!selectedIncident) return;
+    setActionLoading('sighting');
+    try {
+      await reportSighting(selectedIncident.id);
+      setSelectedIncident(prev => ({
+        ...prev,
+        sightingsCount: (prev.sightingsCount || 0) + 1,
+        urgency: ((prev.sightingsCount || 0) + 1) >= 5 ? 'Critical' : prev.urgency
+      }));
+      if (refreshThreats) refreshThreats();
+    } catch (e) {
+      // Optimistic local update
+      setSelectedIncident(prev => ({ ...prev, sightingsCount: (prev.sightingsCount || 0) + 1 }));
+    } finally {
+      setActionLoading(null);
     }
+  };
+
+  const handleFalseAlarm = async () => {
+    if (!selectedIncident) return;
+    setActionLoading('falsealarm');
+    try {
+      await reportFalseAlarm(selectedIncident.id);
+      setSelectedIncident(prev => ({ ...prev, falseAlarmsCount: (prev.falseAlarmsCount || 0) + 1 }));
+      if (refreshThreats) refreshThreats();
+    } catch (e) {
+      setSelectedIncident(prev => ({ ...prev, falseAlarmsCount: (prev.falseAlarmsCount || 0) + 1 }));
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!selectedIncident) return;
+    setActionLoading('verify');
+    try {
+      await verifyThreat(selectedIncident.id);
+      setSelectedIncident(prev => ({ ...prev, verified: true }));
+      if (refreshThreats) refreshThreats();
+    } catch (e) { console.error(e); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleOverrideFP = async () => {
+    if (!selectedIncident) return;
+    setActionLoading('override');
+    try {
+      await overrideFalsePositive(selectedIncident.id);
+      setSelectedIncident(prev => ({ ...prev, status: 'False Positive', verified: true }));
+      if (refreshThreats) refreshThreats();
+    } catch (e) { console.error(e); }
+    finally { setActionLoading(null); }
+  };
+
+  const renderSeverityBadge = (severity) => {
+    const config = {
+      Critical: { bg: 'bg-rose-50 text-rose-600 border-rose-200/80', dot: 'bg-rose-500 animate-pulse' },
+      High: { bg: 'bg-amber-50 text-amber-600 border-amber-200/80', dot: 'bg-amber-500' },
+      Medium: { bg: 'bg-yellow-50 text-yellow-700 border-yellow-200/80', dot: 'bg-yellow-500' },
+      Low: { bg: 'bg-emerald-50 text-emerald-600 border-emerald-200/80', dot: 'bg-emerald-500' }
+    };
+    const c = config[severity] || config.Low;
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider ${c.bg} border shadow-xs`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`}></span>
+        {severity}
+      </span>
+    );
   };
 
   return (
     <div className="card-glass rounded-[28px] p-6 sm:p-7 space-y-6">
-      
+
       {/* Table Header & Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-5">
         <div>
@@ -113,33 +154,7 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
           </p>
         </div>
 
-        {/* Filter Controls & Exports */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          {/* Export Actions for Org Admin and Sys Admin */}
-          {(userRole === 'org_admin' || userRole === 'sys_admin') && (
-            <div className="flex items-center gap-1.5 mr-1">
-              <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden md:inline">Export:</span>
-              <button 
-                onClick={() => window.open('http://127.0.0.1:8001/api/v1/threats/export/rules?format=csv', '_blank')} 
-                className="px-2.5 py-1.5 rounded-full bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/80 text-[10px] font-bold transition shadow-xs cursor-pointer"
-              >
-                CSV
-              </button>
-              <button 
-                onClick={() => window.open('http://127.0.0.1:8001/api/v1/threats/export/rules?format=stix', '_blank')} 
-                className="px-2.5 py-1.5 rounded-full bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200/80 text-[10px] font-bold transition shadow-xs cursor-pointer"
-              >
-                STIX 2.1
-              </button>
-              <button 
-                onClick={() => window.open('http://127.0.0.1:8001/api/v1/threats/export/rules?format=hosts', '_blank')} 
-                className="px-2.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/80 text-[10px] font-bold transition shadow-xs cursor-pointer"
-              >
-                Hosts
-              </button>
-            </div>
-          )}
-
           <div className="relative w-full md:w-52">
             <input
               type="text"
@@ -151,13 +166,13 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
           </div>
 
           <div className="pill-group">
-            {['ALL', 'Critical', 'High', 'Low'].map((sev) => (
+            {['ALL', 'Critical', 'High', 'Medium', 'Low'].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setFilterSeverity(sev)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  filterSeverity === sev 
-                    ? 'bg-slate-900 text-white shadow-xs' 
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
+                  filterSeverity === sev
+                    ? 'bg-slate-900 text-white shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -203,6 +218,7 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
                   </td>
                   <td className="py-3.5 px-4 font-mono text-slate-500 font-medium text-xs whitespace-nowrap">
                     {incident.id}
+                    {incident.verified && <span className="ml-1 text-emerald-500" title="Verified">✓</span>}
                   </td>
                   <td className="py-3.5 px-4 font-mono font-medium text-slate-800 max-w-xs truncate group-hover:text-indigo-600 transition">
                     {incident.indicator}
@@ -226,10 +242,10 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
                   <td className="py-3.5 px-4 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md" title="Community Sightings">
-                        👁 {incident.sightingsCount || 0}
+                        👁 {incident.sightingsCount}
                       </span>
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md" title="False Alarm Reports">
-                        ⚠️ {incident.falseAlarmsCount || 0}
+                        ⚠️ {incident.falseAlarmsCount}
                       </span>
                     </div>
                   </td>
@@ -239,7 +255,7 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
                         e.stopPropagation();
                         setSelectedIncident(incident);
                       }}
-                      className="btn-synthex-secondary px-3.5 py-1 rounded-full text-xs"
+                      className="btn-synthex-secondary px-3.5 py-1 rounded-full text-xs cursor-pointer"
                     >
                       Inspect
                     </button>
@@ -254,17 +270,20 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
       {/* Forensic Inspection Modal */}
       {selectedIncident && (
         <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="card-glass rounded-[28px] p-7 max-w-lg w-full space-y-5 font-sans text-xs shadow-2xl border border-white">
+          <div className="card-glass rounded-[28px] p-7 max-w-lg w-full space-y-5 font-sans text-xs shadow-2xl border border-white max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b border-slate-200/60 pb-3.5">
               <div className="flex items-center gap-2.5">
                 {renderSeverityBadge(selectedIncident.severity)}
                 <span className="font-sans font-bold text-slate-900 text-sm">
                   {selectedIncident.id} Forensic Telemetry
                 </span>
+                {selectedIncident.verified && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 text-[9px] font-bold">✓ VERIFIED</span>
+                )}
               </div>
               <button
                 onClick={() => setSelectedIncident(null)}
-                className="btn-synthex-icon w-8 h-8 text-slate-400 hover:text-slate-800"
+                className="btn-synthex-icon w-8 h-8 text-slate-400 hover:text-slate-800 cursor-pointer"
               >
                 ✕
               </button>
@@ -331,60 +350,71 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
               </div>
             </div>
 
+            {/* ─── RBAC Action Buttons ─── */}
             <div className="pt-3 border-t border-slate-200/60 flex flex-wrap justify-between items-center gap-2">
-              <div className="flex items-center gap-2">
-                {(userRole === 'standard' || userRole === 'org_admin') && (
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Standard + Org Admin: Sightings & False Alarms */}
+                {(userRole === 'standard' || userRole === 'org_admin' || userRole === 'sys_admin') && (
                   <>
                     <button
-                      onClick={async () => {
-                        try {
-                          await fetch(`http://127.0.0.1:8001/api/v1/threats/${selectedIncident.id}/sightings`, { method: 'POST' });
-                          setSelectedIncident(prev => ({ 
-                            ...prev, 
-                            sightingsCount: prev.sightingsCount + 1,
-                            urgency: (prev.sightingsCount + 1) >= 5 ? 'Critical' : prev.urgency
-                          }));
-                        } catch (e) { console.error(e); }
-                      }}
-                      className="px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer"
+                      onClick={handleSighting}
+                      disabled={actionLoading === 'sighting'}
+                      className="px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                     >
-                      👁 I saw this too
+                      👁 {actionLoading === 'sighting' ? 'Reporting...' : 'I saw this too'}
                     </button>
                     <button
-                      onClick={async () => {
-                        try {
-                          await fetch(`http://127.0.0.1:8001/api/v1/threats/${selectedIncident.id}/false-alarms`, { method: 'POST' });
-                          setSelectedIncident(prev => ({ ...prev, falseAlarmsCount: prev.falseAlarmsCount + 1 }));
-                        } catch (e) { console.error(e); }
-                      }}
-                      className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer"
+                      onClick={handleFalseAlarm}
+                      disabled={actionLoading === 'falsealarm'}
+                      className="px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 text-[11px] font-semibold transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
                     >
-                      ⚠️ False Alarm
+                      ⚠️ {actionLoading === 'falsealarm' ? 'Reporting...' : 'False Alarm'}
                     </button>
                   </>
                 )}
-                
-                {userRole === 'sys_admin' && onUpdateStatus && selectedIncident.status !== 'Resolved' && (
-                  <button
-                    onClick={async () => {
-                      await onUpdateStatus(selectedIncident.id, 'Resolved');
-                      setSelectedIncident(prev => ({ ...prev, status: 'Resolved' }));
-                    }}
-                    className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-[11px] font-semibold transition cursor-pointer"
-                  >
-                    ✓ Mark Resolved
-                  </button>
-                )}
-                {userRole === 'sys_admin' && onRemoveThreat && (
-                  <button
-                    onClick={async () => {
-                      await onRemoveThreat(selectedIncident.id);
-                      setSelectedIncident(null);
-                    }}
-                    className="px-3.5 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[11px] font-semibold transition cursor-pointer"
-                  >
-                    🗑 Remove
-                  </button>
+
+                {/* Sys Admin Only: Verify, Override, Resolve, Delete */}
+                {userRole === 'sys_admin' && (
+                  <>
+                    {!selectedIncident.verified && (
+                      <button
+                        onClick={handleVerify}
+                        disabled={actionLoading === 'verify'}
+                        className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50"
+                      >
+                        {actionLoading === 'verify' ? '...' : '✓ Verify'}
+                      </button>
+                    )}
+                    <button
+                      onClick={handleOverrideFP}
+                      disabled={actionLoading === 'override'}
+                      className="px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100 text-[11px] font-semibold transition cursor-pointer disabled:opacity-50"
+                    >
+                      {actionLoading === 'override' ? '...' : '⚑ False Positive'}
+                    </button>
+                    {onUpdateStatus && selectedIncident.status !== 'Resolved' && (
+                      <button
+                        onClick={async () => {
+                          await onUpdateStatus(selectedIncident.id, 'Resolved');
+                          setSelectedIncident(prev => ({ ...prev, status: 'Resolved' }));
+                        }}
+                        className="px-3.5 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 text-[11px] font-semibold transition cursor-pointer"
+                      >
+                        ✓ Resolve
+                      </button>
+                    )}
+                    {onRemoveThreat && (
+                      <button
+                        onClick={async () => {
+                          await onRemoveThreat(selectedIncident.id);
+                          setSelectedIncident(null);
+                        }}
+                        className="px-3.5 py-1.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-[11px] font-semibold transition cursor-pointer"
+                      >
+                        🗑 Remove
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
 

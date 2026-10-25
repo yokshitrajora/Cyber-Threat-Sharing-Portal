@@ -1,6 +1,6 @@
 import IncidentStreamTable from '../components/IncidentStreamTable';
 
-export default function LiveFeed({ threats, onUpdateStatus, onRemoveThreat, isLiveConnected, userRole }) {
+export default function LiveFeed({ threats, onUpdateStatus, onRemoveThreat, isLiveConnected, userRole, refreshThreats }) {
   return (
     <div className="space-y-7">
       <div className="border-b border-slate-200/60 pb-5">
@@ -25,6 +25,7 @@ export default function LiveFeed({ threats, onUpdateStatus, onRemoveThreat, isLi
         onUpdateStatus={onUpdateStatus} 
         onRemoveThreat={onRemoveThreat} 
         userRole={userRole}
+        refreshThreats={refreshThreats}
       />
     </div>
   );

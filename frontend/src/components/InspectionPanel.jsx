@@ -230,13 +230,31 @@ export default function InspectionPanel({ onThreatAdded }) {
           ></textarea>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading || !threatData.trim()}
-          className="w-full btn-synthex-primary py-3.5 px-4 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-sans text-xs shadow-md"
-        >
-          {loading ? 'Analyzing & Sanitizing Indicator...' : 'Sanitize & Ingest Threat'}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="submit"
+            disabled={loading || !threatData.trim()}
+            className="flex-1 btn-synthex-primary py-3.5 px-4 rounded-full transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-sans text-xs shadow-md cursor-pointer flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                Analyzing & Sanitizing Indicator...
+              </>
+            ) : (
+              'Sanitize & Ingest Threat'
+            )}
+          </button>
+          {(threatData || description || result) && (
+            <button
+              type="button"
+              onClick={() => { setThreatData(''); setDescription(''); setResult(null); }}
+              className="px-5 py-3.5 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 transition font-bold text-xs cursor-pointer"
+            >
+              Reset
+            </button>
+          )}
+        </div>
       </form>
 
     </div>

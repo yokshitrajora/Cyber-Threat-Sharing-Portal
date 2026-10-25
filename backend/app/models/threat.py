@@ -1,5 +1,5 @@
-﻿from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from datetime import datetime, timezone
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, Float
 from app.db.base import Base
 
 class ThreatIncident(Base):
@@ -21,4 +21,14 @@ class ThreatIncident(Base):
     stix_bundle = Column(Text, nullable=True)  # STIX 2.1 JSON Specification
     virustotal_summary = Column(Text, nullable=True)
     abuseipdb_summary = Column(Text, nullable=True)
+    sightings_count = Column(Integer, default=0, nullable=False)
+    false_alarms_count = Column(Integer, default=0, nullable=False)
+    verified = Column(Boolean, default=False, nullable=False)
+    
+    # Geo-location coordinates for Interactive Threat Map
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    origin_country = Column(String(100), nullable=True)
+    origin_city = Column(String(100), nullable=True)
+
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)

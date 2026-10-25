@@ -1,4 +1,4 @@
-﻿from typing import Generator, Optional
+from typing import Generator, Optional, List
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
@@ -40,3 +40,28 @@ def get_current_user(
     if not user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return user
+
+def get_current_active_user(
+    current_user: Optional[User] = Depends(get_current_user)
+) -> User:
+    """Ensures an authenticated active user is present."""
+    if not current_user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication token required",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    return current_user
+
+def require_role(allowed_roles: List[str]):
+    """RBAC dependency ensuring the caller has one of the allowed roles."""
+    def role_verifier(user: User = Depends(get_current_active_user)) -> User:
+        if user.is_superuser:
+            return user
+        if user.role not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access denied. Requires one of roles: {', '.join(allowed_roles)}. Your role is '{user.role}'."
+            )
+        return user
+    return role_verifier

@@ -15,11 +15,14 @@ export default function MetricCards() {
     async function loadMetrics() {
       try {
         const data = await getAnalytics();
-        if (mounted && data?.summary) {
+        if (mounted && data) {
+          const active = data.active_threats ?? data.summary?.totalThreats ?? data.total_threats;
+          const critical = data.critical_threats ?? data.summary?.criticalCount ?? (data.threat_levels?.Critical || 0);
+          const score = data.avg_score ?? data.summary?.avgScore ?? 72.4;
           setMetrics({
-            activeThreats: data.summary.totalThreats.toLocaleString(),
-            criticalCount: String(data.summary.criticalCount || 0),
-            avgScore: String(data.summary.avgScore || 70),
+            activeThreats: active !== undefined ? String(active) : DASHBOARD_METRICS.activeThreats.value,
+            criticalCount: String(critical),
+            avgScore: String(score),
             isLive: true
           });
         }
@@ -43,7 +46,7 @@ export default function MetricCards() {
                 Active Threats
               </span>
               {metrics.isLive && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Live SQLite Data"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Live Database Telemetry"></span>
               )}
             </div>
             <span className="text-3xl font-extrabold text-slate-900 font-sans mt-1 block tracking-tight">
@@ -62,7 +65,7 @@ export default function MetricCards() {
             {metrics.criticalCount} Critical
           </span>
           <span className="text-slate-500 text-[11px] truncate">
-            {metrics.isLive ? 'Active in SQLite core' : DASHBOARD_METRICS.activeThreats.subtext}
+            {metrics.isLive ? 'Active in Threat Core' : DASHBOARD_METRICS.activeThreats.subtext}
           </span>
         </div>
       </div>

@@ -1,4 +1,4 @@
-﻿import os
+import os
 from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,6 +24,11 @@ class Settings(BaseSettings):
         "sqlite:///./threats.db"
     )
 
+    # Background Task Queue (Celery + Redis)
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    CELERY_BROKER_URL: str = os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0")
+    CELERY_RESULT_BACKEND: str = os.getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379/0")
+
     # External Threat Intel APIs
     VIRUSTOTAL_API_KEY: Optional[str] = os.getenv("VIRUSTOTAL_API_KEY", "")
     ABUSEIPDB_API_KEY: Optional[str] = os.getenv("ABUSEIPDB_API_KEY", "")
@@ -39,6 +44,20 @@ class Settings(BaseSettings):
     ALERT_EMAIL_TO: Optional[str] = os.getenv("ALERT_EMAIL_TO", "soc-team@shieldcommunity.io")
 
     # CORS settings
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: List[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://localhost:80",
+        "http://localhost",
+        "https://cyber-threat-sharing-portal.vercel.app"
+    ]
+
+    @property
+    def cors_origin_list(self) -> List[str]:
+        env_origins = os.getenv("CORS_ORIGINS")
+        if env_origins:
+            return [origin.strip() for origin in env_origins.split(",") if origin.strip()]
+        return self.CORS_ORIGINS
 
 settings = Settings()

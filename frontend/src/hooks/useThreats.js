@@ -29,20 +29,24 @@ export function useThreats() {
 
   useEffect(() => {
     fetchThreats();
+    const interval = setInterval(fetchThreats, 15000);
+    return () => clearInterval(interval);
   }, [fetchThreats]);
 
   const addThreat = useCallback((newThreat) => {
     setThreats(prev => [newThreat, ...prev]);
-  }, []);
+    // Refresh from server to get canonical data
+    setTimeout(() => fetchThreats(), 500);
+  }, [fetchThreats]);
 
   const updateStatus = useCallback(async (id, status) => {
     try {
       await updateThreatStatus(id, status);
-      setThreats(prev => prev.map(t => (t.id === id || t.numericId === id) ? { ...t, status } : t));
+      setThreats(prev => prev.map(t => (t.id === id || t.numericId === id || t.numeric_id === id) ? { ...t, status } : t));
       return true;
     } catch {
       // Optimistic fallback update for offline mode
-      setThreats(prev => prev.map(t => (t.id === id || t.numericId === id) ? { ...t, status } : t));
+      setThreats(prev => prev.map(t => (t.id === id || t.numericId === id || t.numeric_id === id) ? { ...t, status } : t));
       return false;
     }
   }, []);
@@ -50,11 +54,11 @@ export function useThreats() {
   const removeThreat = useCallback(async (id) => {
     try {
       await deleteThreat(id);
-      setThreats(prev => prev.filter(t => t.id !== id && t.numericId !== id));
+      setThreats(prev => prev.filter(t => t.id !== id && t.numericId !== id && t.numeric_id !== id));
       return true;
     } catch {
       // Optimistic fallback remove for offline mode
-      setThreats(prev => prev.filter(t => t.id !== id && t.numericId !== id));
+      setThreats(prev => prev.filter(t => t.id !== id && t.numericId !== id && t.numeric_id !== id));
       return false;
     }
   }, []);
