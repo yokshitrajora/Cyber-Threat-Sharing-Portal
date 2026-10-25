@@ -250,7 +250,7 @@ export default function InteractiveThreatMap() {
   };
 
   return (
-    <div className="card-glass rounded-[28px] p-6 sm:p-7 space-y-6">
+    <div className="bg-white rounded-[32px] p-6 sm:p-7 border border-[#e8ece5] shadow-xs space-y-6">
       
       {/* Map Header & Filter Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-5">

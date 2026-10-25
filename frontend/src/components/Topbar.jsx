@@ -50,14 +50,14 @@ export default function Topbar({ onToggleSidebar, userRole }) {
   };
 
   return (
-    <header className="bg-white/60 backdrop-blur-xl border-b border-white/80 sticky top-0 z-30 shadow-[0_4px_20px_-10px_rgba(15,23,42,0.03)]">
-      <div className="px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4">
+    <header className="bg-[#f8faf7] border-b border-[#e8ece5] sticky top-0 z-30">
+      <div className="px-4 sm:px-8 py-4 flex items-center justify-between gap-4">
         
         {/* Left Side: Mobile Menu Button, Back Button & Search Bar */}
         <div className="flex items-center gap-3 flex-1 max-w-xl">
           <button
             onClick={onToggleSidebar}
-            className="lg:hidden btn-synthex-icon text-slate-600"
+            className="lg:hidden btn-synthex-icon text-slate-800"
             aria-label="Toggle Navigation Menu"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +67,7 @@ export default function Topbar({ onToggleSidebar, userRole }) {
 
           <button 
             onClick={() => navigate(-1)}
-            className="hidden sm:inline-flex btn-synthex-icon text-slate-500 hover:text-slate-800"
+            className="hidden sm:inline-flex btn-synthex-icon text-slate-600 hover:text-black"
             title="Go back"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +87,7 @@ export default function Topbar({ onToggleSidebar, userRole }) {
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
               placeholder="Search threat indicators, IP addresses, domains, or CVE IDs..."
-              className="w-full pl-10 pr-9 py-2 input-synthex rounded-full text-xs text-slate-800 placeholder-slate-400 font-sans"
+              className="w-full pl-10 pr-9 py-2.5 bg-white border border-[#e8ece5] rounded-full text-xs text-slate-800 placeholder-slate-400 font-sans shadow-2xs focus:border-[#111315] focus:outline-none"
             />
             {query && (
               <button
@@ -103,30 +103,28 @@ export default function Topbar({ onToggleSidebar, userRole }) {
           </div>
         </div>
 
-        {/* Right Side: Role Badge + Quick Action */}
+        {/* Right Side: Role Badge + Action Button */}
         <div className="flex items-center gap-3 shrink-0">
+
           {/* Interactive Role Switcher Pill */}
           <div className="relative">
             <button
               onClick={() => setRoleMenuOpen(prev => !prev)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold border transition cursor-pointer hover:shadow-sm ${
-                userRole === 'sys_admin' ? 'bg-rose-50 text-rose-700 border-rose-200 hover:bg-rose-100' :
-                userRole === 'org_admin' ? 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100' :
-                'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-              }`}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-bold border border-[#e8ece5] bg-white text-slate-800 transition cursor-pointer hover:bg-[#f2f5ef] shadow-2xs"
               title="Click to switch RBAC Role tier"
             >
+              <span className={`w-2 h-2 rounded-full ${userRole === 'sys_admin' ? 'bg-rose-500' : userRole === 'org_admin' ? 'bg-purple-500' : 'bg-[#dbf65f]'}`}></span>
               <span>{userRole === 'sys_admin' ? '⚡ System Admin' : userRole === 'org_admin' ? '🏢 Org Admin' : '👤 Standard User'}</span>
-              <span className="text-[8px] opacity-70">▼</span>
+              <span className="text-[9px] text-slate-400">⌄</span>
             </button>
 
             {roleMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 card-glass rounded-2xl p-1.5 border border-white shadow-xl z-50 animate-in fade-in duration-150">
-                <div className="px-3 py-1 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-3xl p-2 border border-[#e8ece5] shadow-xl z-50 animate-in fade-in duration-150">
+                <div className="px-3 py-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 mb-1">
                   Switch RBAC Tier
                 </div>
                 {[
-                  { id: 'standard', name: 'Standard User', icon: '👤', cls: 'text-blue-700 hover:bg-blue-50' },
+                  { id: 'standard', name: 'Standard User', icon: '👤', cls: 'text-slate-700 hover:bg-[#f4f6f1]' },
                   { id: 'org_admin', name: 'Org Admin', icon: '🏢', cls: 'text-purple-700 hover:bg-purple-50' },
                   { id: 'sys_admin', name: 'System Admin', icon: '⚡', cls: 'text-rose-700 hover:bg-rose-50' }
                 ].map(r => (
@@ -136,25 +134,24 @@ export default function Topbar({ onToggleSidebar, userRole }) {
                       setRoleMenuOpen(false);
                       try { await quickLogin(r.id); } catch (e) { console.error(e); }
                     }}
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${
-                      userRole === r.id ? 'bg-slate-900 text-white font-bold' : r.cls
+                    className={`w-full text-left px-3 py-2 rounded-2xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${
+                      userRole === r.id ? 'bg-[#111315] text-[#dbf65f] font-bold' : r.cls
                     }`}
                   >
                     <span>{r.icon} {r.name}</span>
-                    {userRole === r.id && <span className="text-[10px]">✓</span>}
+                    {userRole === r.id && <span className="text-[10px] text-[#dbf65f]">✓</span>}
                   </button>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Primary Action Button (charcoal pill with + like in Reference UI) */}
           <NavLink
             to="/report"
-            className="btn-synthex-primary px-4 py-2 text-xs rounded-full shrink-0 shadow-sm flex items-center gap-1.5"
+            className="bg-[#111315] hover:bg-black text-white px-5 py-2.5 text-xs font-bold rounded-full shrink-0 shadow-sm flex items-center gap-2 transition cursor-pointer"
           >
-            <svg className="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
-            </svg>
+            <span className="text-[#dbf65f] font-mono font-bold text-sm leading-none">+</span>
             <span>Scan Indicator</span>
           </NavLink>
         </div>

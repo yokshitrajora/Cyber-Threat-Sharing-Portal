@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import { SYSTEM_HEALTH } from '../data/mockThreats';
 import { useAuth } from '../hooks/useAuth';
@@ -11,12 +12,89 @@ const ROLE_LABELS = {
 export default function Sidebar({ isOpen, onClose, userRole }) {
   const { logout, user } = useAuth();
   const roleInfo = ROLE_LABELS[userRole] || ROLE_LABELS.standard;
+  const asideRef = useRef(null);
+  const wrapperRef = useRef(null);
+  const cardRef = useRef(null);
+
+  useEffect(() => {
+    let animationFrameId;
+
+    const updateStickyPosition = () => {
+      if (!cardRef.current || !asideRef.current || !wrapperRef.current) return;
+
+      // On mobile screens, keep standard flow inside the offcanvas drawer
+      if (window.innerWidth < 1024) {
+        cardRef.current.style.transform = 'none';
+        return;
+      }
+
+      const asideEl = asideRef.current;
+      const cardEl = cardRef.current;
+      const wrapperEl = wrapperRef.current;
+
+      const asideRect = asideEl.getBoundingClientRect();
+      const asideHeight = asideEl.offsetHeight;
+      const cardHeight = cardEl.offsetHeight;
+
+      // Natural starting top of the card wrapper right below Telemetry Engine
+      const minTop = wrapperEl.offsetTop;
+
+      // Upper bound so the card never overflows past the bottom of the sidebar
+      const maxTop = Math.max(minTop, asideHeight - cardHeight - 20);
+
+      // Distance from top of aside to bottom of current viewport
+      const viewportBottomInAside = window.innerHeight - asideRect.top;
+
+      // Desired top position: keep card pinned 20px above the bottom of the viewport
+      const targetTop = viewportBottomInAside - cardHeight - 20;
+
+      // Clamp between minTop (never overlaps nav/telemetry) and maxTop (never leaves container)
+      const finalTop = Math.min(Math.max(minTop, targetTop), maxTop);
+
+      // Calculate hardware-accelerated transform offset from natural starting point
+      const offset = Math.max(0, finalTop - minTop);
+
+      cardEl.style.transform = `translate3d(0, ${offset}px, 0)`;
+    };
+
+    const handleScrollOrResize = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(updateStickyPosition);
+    };
+
+    window.addEventListener('scroll', handleScrollOrResize, { passive: true });
+    window.addEventListener('resize', handleScrollOrResize, { passive: true });
+
+    // Initial check on mount / route update
+    updateStickyPosition();
+
+    // Observe document and container expansions
+    let resizeObserver;
+    if (typeof ResizeObserver !== 'undefined' && asideRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        handleScrollOrResize();
+      });
+      resizeObserver.observe(asideRef.current);
+      if (document.body) {
+        resizeObserver.observe(document.body);
+      }
+    }
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('scroll', handleScrollOrResize);
+      window.removeEventListener('resize', handleScrollOrResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, [isOpen]);
 
   const navLinkClass = ({ isActive }) =>
     `flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all ${
       isActive
-        ? 'bg-slate-900 text-white shadow-md shadow-slate-900/15'
-        : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+        ? 'bg-[#202327] text-[#dbf65f] shadow-sm'
+        : 'text-slate-400 hover:text-white hover:bg-[#191c20]'
     }`;
 
   return (
@@ -25,43 +103,44 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
       {isOpen && (
         <div
           onClick={onClose}
-          className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 lg:hidden"
         />
       )}
 
-      {/* Vertical Sidebar Console Panel */}
-      <aside className={`fixed top-0 left-0 bottom-0 w-72 bg-white/75 backdrop-blur-2xl border-r border-white/80 shadow-[10px_0_30px_-15px_rgba(15,23,42,0.05)] z-50 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
-        isOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      {/* Vertical Sidebar Console Panel (Charcoal Pillar from Reference UI) */}
+      <aside
+        ref={asideRef}
+        className={`fixed lg:absolute top-0 left-0 bottom-0 w-64 bg-[#111315] text-slate-300 z-40 flex flex-col transition-transform duration-300 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } overflow-y-auto lg:overflow-visible`}
+      >
         
-        {/* Top Header & Brand */}
-        <div className="p-6 border-b border-slate-200/60">
-          <NavLink to="/" className="flex items-center gap-3.5 group">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-900 text-white flex items-center justify-center font-bold text-lg shadow-md shadow-slate-900/15 group-hover:scale-105 transition-transform duration-200">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+        {/* Top Header & Brand with + Button */}
+        <div className="p-5 border-b border-white/5 flex items-center justify-between shrink-0">
+          <NavLink to="/" className="flex items-center gap-3 group">
+            <div className="w-10 h-10 rounded-2xl bg-[#202327] border border-white/10 text-white flex items-center justify-center font-bold text-lg group-hover:scale-105 transition-transform duration-200">
+              <span className="text-[#dbf65f] font-mono text-xl leading-none">+</span>
             </div>
             <div>
-              <span className="text-lg font-extrabold text-slate-900 tracking-tight flex items-center gap-1 font-sans">
-                Shield<span className="text-indigo-600 font-serif italic font-normal">AI</span>
+              <span className="text-base font-extrabold text-white tracking-tight flex items-center gap-1 font-sans">
+                Shield<span className="text-[#dbf65f] font-serif italic font-normal">AI</span>
               </span>
-              <span className="block text-[10px] font-mono tracking-widest text-slate-400 font-semibold uppercase -mt-0.5">
-                Threat Detection
+              <span className="block text-[9px] font-mono tracking-widest text-slate-400 font-semibold uppercase -mt-0.5">
+                SOC Intelligence
               </span>
             </div>
           </NavLink>
         </div>
 
         {/* Navigation Section */}
-        <div className="flex-1 px-4 py-6 space-y-6 overflow-y-auto font-sans min-h-0">
+        <div className="px-3.5 py-4 space-y-5 font-sans shrink-0">
           
           {/* ─── Core Navigation (All Roles) ─── */}
           <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 mb-2.5 font-bold">
-              Monitoring & SOC
+            <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 px-3 mb-2 font-bold">
+              Monitoring & Workflows
             </span>
-            <nav className="space-y-1.5">
+            <nav className="space-y-1">
               <NavLink to="/" end onClick={onClose} className={navLinkClass}>
                 <div className="flex items-center gap-3">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +157,7 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
                   </svg>
                   <span>Live Threat Feed</span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200/70">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#dbf65f]/15 text-[#dbf65f] font-bold border border-[#dbf65f]/30">
                   LIVE
                 </span>
               </NavLink>
@@ -99,7 +178,7 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
                   </svg>
                   <span>Threat Origin Map</span>
                 </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 font-bold border border-indigo-200/70">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-white font-bold border border-white/15">
                   MAP
                 </span>
               </NavLink>
@@ -118,10 +197,10 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
           {/* ─── Org Admin Section ─── */}
           {(userRole === 'org_admin' || userRole === 'sys_admin') && (
             <div>
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 mb-2.5 font-bold">
+              <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 px-3 mb-2 font-bold">
                 Organization
               </span>
-              <nav className="space-y-1.5">
+              <nav className="space-y-1">
                 <NavLink to="/org" onClick={onClose} className={navLinkClass}>
                   <div className="flex items-center gap-3">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +208,7 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
                     </svg>
                     <span>Org Dashboard</span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-50 text-purple-600 font-bold border border-purple-200/70">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">
                     ORG
                   </span>
                 </NavLink>
@@ -140,10 +219,10 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
           {/* ─── Sys Admin Section ─── */}
           {userRole === 'sys_admin' && (
             <div>
-              <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 mb-2.5 font-bold">
+              <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 px-3 mb-2 font-bold">
                 Administration
               </span>
-              <nav className="space-y-1.5">
+              <nav className="space-y-1">
                 <NavLink to="/admin" onClick={onClose} className={navLinkClass}>
                   <div className="flex items-center gap-3">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +231,7 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
                     </svg>
                     <span>Admin Panel</span>
                   </div>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 font-bold border border-rose-200/70">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/30">
                     ADMIN
                   </span>
                 </NavLink>
@@ -162,28 +241,28 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
 
           {/* Telemetry Engine */}
           <div>
-            <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-400 px-3 mb-2.5 font-bold">
+            <span className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 px-3 mb-2 font-bold">
               Telemetry Engine
             </span>
-            <div className="p-4 rounded-2xl bg-white/60 border border-white/80 space-y-3 shadow-xs">
+            <div className="p-3.5 rounded-2xl bg-[#191c20] border border-white/5 space-y-2.5">
               <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-600 font-medium">CPU Cluster Load</span>
-                <span className="font-mono text-slate-800 font-bold">{SYSTEM_HEALTH.cpuUsage}%</span>
+                <span className="text-slate-400 font-medium">CPU Cluster Load</span>
+                <span className="font-mono text-white font-bold">{SYSTEM_HEALTH.cpuUsage}%</span>
               </div>
-              <div className="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-[#23272d] h-1.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-indigo-600 h-full rounded-full transition-all duration-500"
+                  className="bg-[#dbf65f] h-full rounded-full transition-all duration-500"
                   style={{ width: `${SYSTEM_HEALTH.cpuUsage}%` }}
                 />
               </div>
 
               <div className="flex justify-between items-center text-xs pt-1">
-                <span className="text-slate-600 font-medium">RAM Memory</span>
-                <span className="font-mono text-slate-800 font-bold">{SYSTEM_HEALTH.memoryUsage}%</span>
+                <span className="text-slate-400 font-medium">RAM Memory</span>
+                <span className="font-mono text-white font-bold">{SYSTEM_HEALTH.memoryUsage}%</span>
               </div>
-              <div className="w-full bg-slate-200/70 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-[#23272d] h-1.5 rounded-full overflow-hidden">
                 <div
-                  className="bg-slate-800 h-full rounded-full transition-all duration-500"
+                  className="bg-white h-full rounded-full transition-all duration-500"
                   style={{ width: `${SYSTEM_HEALTH.memoryUsage}%` }}
                 />
               </div>
@@ -192,34 +271,34 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
 
         </div>
 
-        {/* Bottom Operator Profile Card */}
-        <div className="p-4 border-t border-slate-200/60 bg-white/40">
-          <div className="flex flex-col gap-2.5 p-3 rounded-2xl bg-white/80 border border-white shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr ${roleInfo.color} text-white flex items-center justify-center font-bold text-xs shadow-xs`}>
+        {/* Bottom Operator Profile Card - Sticky moving down as user scrolls */}
+        <div className="sticky bottom-4 mx-3.5 z-30 mt-auto pt-3 pb-1">
+          <div className="flex flex-col gap-2 p-2.5 rounded-2xl bg-[#191c20] border border-white/5 shadow-2xl">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 border-2 border-white/20 text-white flex items-center justify-center font-bold text-xs shrink-0">
                 {(user?.username || 'U')[0].toUpperCase()}
               </div>
               <div className="flex-1 truncate">
-                <span className="block text-xs font-bold text-slate-800 truncate">
+                <span className="block text-xs font-bold text-white truncate">
                   {user?.username || roleInfo.name}
                 </span>
-                <span className="block text-[11px] font-sans text-slate-400 font-medium truncate">
-                  {roleInfo.sub} • {user?.organization || ''}
+                <span className="block text-[10px] font-sans text-slate-400 truncate">
+                  {roleInfo.sub}
                 </span>
               </div>
             </div>
-            <div className="flex items-center gap-1.5">
-              <span className={`flex-1 text-center text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg border ${
-                userRole === 'sys_admin' ? 'bg-rose-50 text-rose-600 border-rose-200' :
-                userRole === 'org_admin' ? 'bg-purple-50 text-purple-600 border-purple-200' :
-                'bg-blue-50 text-blue-600 border-blue-200'
+            <div className="flex items-center gap-1.5 pt-1">
+              <span className={`flex-1 text-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${
+                userRole === 'sys_admin' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
+                userRole === 'org_admin' ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' :
+                'bg-[#dbf65f]/10 text-[#dbf65f] border-[#dbf65f]/30'
               }`}>
                 {userRole}
               </span>
             </div>
             <button
               onClick={logout}
-              className="w-full bg-rose-50 border border-rose-200/80 text-rose-600 hover:bg-rose-100 rounded-xl text-[10px] font-bold py-1.5 transition-colors cursor-pointer"
+              className="w-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-[10px] font-bold py-1 transition-colors cursor-pointer"
             >
               Sign Out
             </button>

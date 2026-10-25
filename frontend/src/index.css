@@ -5,13 +5,22 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --color-synthex-bg: #edf2f8;
-  --color-synthex-card: rgba(255, 255, 255, 0.65);
-  --color-synthex-card-hover: rgba(255, 255, 255, 0.82);
-  --color-synthex-border: rgba(255, 255, 255, 0.85);
-  --color-synthex-border-subtle: rgba(226, 232, 240, 0.8);
+  /* Theme Palette from Reference UI */
+  --color-theme-sage: #9ea89e;
+  --color-theme-canvas: #f8faf7;
+  --color-theme-charcoal: #111315;
+  --color-theme-charcoal-light: #202327;
+  --color-theme-lime: #dbf65f;
+  --color-theme-lime-hover: #cbe64c;
+  --color-theme-border: #e6eae3;
+
+  --color-synthex-bg: #f8faf7;
+  --color-synthex-card: #ffffff;
+  --color-synthex-card-hover: #ffffff;
+  --color-synthex-border: #e6eae3;
+  --color-synthex-border-subtle: #e2e8f0;
   
-  --color-synthex-dark: #111827;
+  --color-synthex-dark: #111315;
   --color-synthex-slate: #475569;
   --color-synthex-muted: #94a3b8;
 
@@ -23,8 +32,8 @@
 
 @layer base {
   body {
-    background: linear-gradient(135deg, #e8edf5 0%, #edf2f9 40%, #e2eaf4 100%);
-    color: #1e293b;
+    background-color: #9ea89e;
+    color: #111315;
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
     min-height: 100vh;
     -webkit-font-smoothing: antialiased;
@@ -41,132 +50,129 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.35);
+    background: rgba(17, 19, 21, 0.2);
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(100, 116, 139, 0.5);
+    background: rgba(17, 19, 21, 0.35);
   }
 
   ::selection {
-    background-color: #0f172a;
-    color: #ffffff;
+    background-color: #dbf65f;
+    color: #111315;
   }
 }
 
-/* Synthex Glassmorphic Design System */
+/* Modern Geometric UI Design System (Reference Inspired) */
 @layer components {
 
-  /* Core Synthex Frosted Glass Container */
+  /* Clean Solid White Modern Card */
   .card-glass,
-  .card-3d {
-    background: linear-gradient(140deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.46) 100%);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.85);
-    border-top: 1px solid #ffffff;
-    border-left: 1px solid rgba(255, 255, 255, 0.95);
-    box-shadow:
-      0 20px 40px -15px rgba(30, 41, 59, 0.07),
-      0 4px 12px -2px rgba(30, 41, 59, 0.03),
-      inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  .card-3d,
+  .card-modern-white {
+    background: #ffffff;
+    border: 1px solid #e8ece5;
+    border-radius: 28px;
+    box-shadow: 0 4px 20px -2px rgba(17, 19, 21, 0.03);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .card-glass:hover,
-  .card-3d:hover {
-    background: linear-gradient(140deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.58) 100%);
-    border-color: rgba(255, 255, 255, 0.95);
-    box-shadow:
-      0 26px 50px -16px rgba(30, 41, 59, 0.12),
-      0 6px 18px -3px rgba(30, 41, 59, 0.05),
-      inset 0 1px 2px 0 rgba(255, 255, 255, 1);
-    transform: translateY(-2px);
+  .card-3d:hover,
+  .card-modern-white:hover {
+    box-shadow: 0 12px 30px -8px rgba(17, 19, 21, 0.06);
+    border-color: #dce2d8;
   }
 
-  /* Synthex Highlighted Glass Accent Card (with subtle luminous purple/blue top glow) */
+  /* Electric Chartreuse / Lime Accent Card */
+  .card-modern-lime {
+    background: #dbf65f;
+    color: #111315;
+    border: 1px solid #cbe64c;
+    border-radius: 28px;
+    box-shadow: 0 8px 24px -4px rgba(219, 246, 95, 0.3);
+  }
+
+  /* Deep Charcoal Black Modern Card */
+  .card-modern-dark,
   .card-synthex-hero {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(245, 248, 255, 0.55) 100%);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1.5px solid rgba(255, 255, 255, 0.95);
+    background: #111315;
+    color: #ffffff;
+    border: 1px solid #202327;
+    border-radius: 28px;
+    box-shadow: 0 14px 34px -6px rgba(17, 19, 21, 0.25);
     position: relative;
-    box-shadow:
-      0 24px 48px -12px rgba(30, 41, 59, 0.09),
-      0 8px 16px -4px rgba(99, 102, 241, 0.05),
-      inset 0 1px 1px rgba(255, 255, 255, 1);
+    overflow: hidden;
   }
 
-  .card-synthex-hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 15%;
-    width: 40%;
-    height: 45%;
-    background: radial-gradient(circle, rgba(165, 180, 252, 0.3) 0%, rgba(199, 210, 254, 0.05) 60%, transparent 80%);
-    filter: blur(25px);
-    pointer-events: none;
+  /* Capsule Pill Progress Indicator */
+  .capsule-pill {
+    width: 0.875rem;
+    height: 2rem;
     border-radius: 9999px;
+    transition: all 0.2s ease;
   }
 
-  /* Floating Peeking Card (from Synthex UI reference image) */
-  .peek-card {
-    background: rgba(255, 255, 255, 0.95);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    box-shadow: 0 10px 25px -6px rgba(30, 41, 59, 0.09), 0 2px 6px rgba(30, 41, 59, 0.04);
-    border-radius: 18px;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  .capsule-pill-filled-dark {
+    background: #111315;
   }
 
-  .peek-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 16px 30px -8px rgba(30, 41, 59, 0.14);
+  .capsule-pill-empty-dark {
+    background: #e6eae3;
+    border: 1.5px dashed #cbd2c7;
   }
 
-  /* Synthex Filter Pill (e.g. Device Type v, Traffic Source v) */
-  .pill-filter {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.9);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.7);
-    color: #334155;
+  .capsule-pill-filled-lime {
+    background: #111315;
+  }
+
+  .capsule-pill-empty-lime {
+    background: rgba(17, 19, 21, 0.12);
+    border: 1.5px dashed rgba(17, 19, 21, 0.25);
+  }
+
+  /* Pill Navigation Tabs */
+  .pill-tab {
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
-    padding: 0.45rem 0.95rem;
-    border-radius: 9999px;
+    transition: all 0.2s ease;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    box-shadow: 0 4px 10px -2px rgba(15, 23, 42, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    cursor: pointer;
+    gap: 0.35rem;
   }
 
-  .pill-filter:hover {
-    background: rgba(255, 255, 255, 0.9);
-    color: #0f172a;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px -3px rgba(15, 23, 42, 0.08), inset 0 1px 0 #ffffff;
+  .pill-tab-active {
+    background: #111315;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(17, 19, 21, 0.15);
   }
 
-  /* Synthex Primary Action Button */
+  .pill-tab-inactive {
+    background: #ffffff;
+    color: #4b5563;
+    border: 1px solid #e8ece5;
+  }
+
+  .pill-tab-inactive:hover {
+    background: #f3f5f1;
+    color: #111315;
+  }
+
+  /* Primary Charcoal Pill Button */
   .btn-synthex-primary,
   .btn-3d-primary {
-    background: #0f172a;
+    background: #111315;
     color: #ffffff;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.75rem;
-    letter-spacing: -0.01em;
     padding: 0.55rem 1.25rem;
     border-radius: 9999px;
-    border: 1px solid rgba(15, 23, 42, 0.9);
-    box-shadow:
-      0 6px 18px -4px rgba(15, 23, 42, 0.25),
-      0 2px 6px -1px rgba(15, 23, 42, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid #111315;
+    box-shadow: 0 4px 12px rgba(17, 19, 21, 0.15);
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -177,113 +183,105 @@
 
   .btn-synthex-primary:hover,
   .btn-3d-primary:hover {
-    background: #1e293b;
+    background: #000000;
     transform: translateY(-1px);
-    box-shadow:
-      0 10px 24px -5px rgba(15, 23, 42, 0.32),
-      0 4px 8px -2px rgba(15, 23, 42, 0.18);
+    box-shadow: 0 6px 18px rgba(17, 19, 21, 0.25);
   }
 
-  .btn-synthex-primary:active,
-  .btn-3d-primary:active {
-    transform: translateY(1px);
-    box-shadow: 0 3px 8px -2px rgba(15, 23, 42, 0.25);
-  }
-
-  /* Synthex Secondary Frosted Pill Button */
-  .btn-synthex-secondary,
-  .btn-3d-secondary {
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    color: #334155;
-    font-weight: 600;
+  /* Electric Lime Pill Button */
+  .btn-lime {
+    background: #dbf65f;
+    color: #111315;
+    font-weight: 700;
     font-size: 0.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.95);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.8);
+    padding: 0.55rem 1.25rem;
     border-radius: 9999px;
-    padding: 0.5rem 1.1rem;
-    box-shadow:
-      0 4px 12px -2px rgba(15, 23, 42, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    border: 1px solid #cbe64c;
+    box-shadow: 0 4px 12px rgba(219, 246, 95, 0.3);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.2s ease;
+  }
+
+  .btn-lime:hover {
+    background: #cbe64c;
+    transform: translateY(-1px);
+  }
+
+  /* Secondary Clean White Pill Button */
+  .btn-synthex-secondary,
+  .btn-3d-secondary {
+    background: #ffffff;
+    color: #111315;
+    font-weight: 600;
+    font-size: 0.75rem;
+    border: 1px solid #e8ece5;
+    border-radius: 9999px;
+    padding: 0.5rem 1.1rem;
+    box-shadow: 0 2px 6px rgba(17, 19, 21, 0.04);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
   .btn-synthex-secondary:hover,
   .btn-3d-secondary:hover {
-    background: rgba(255, 255, 255, 0.92);
-    color: #0f172a;
-    border-color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow:
-      0 8px 18px -3px rgba(15, 23, 42, 0.09),
-      inset 0 1px 0 #ffffff;
+    background: #f4f6f2;
+    border-color: #dce2d8;
   }
 
-  .btn-synthex-secondary:active,
-  .btn-3d-secondary:active {
-    transform: translateY(1px);
-  }
-
-  /* Synthex Circular Icon Action Button (like the Back button or 3-dots in reference) */
+  /* Circular Icon Action Button */
   .btn-synthex-icon {
-    width: 2.25rem;
-    height: 2.25rem;
+    width: 2.35rem;
+    height: 2.35rem;
     border-radius: 9999px;
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    background: #ffffff;
+    border: 1px solid #e8ece5;
+    box-shadow: 0 2px 8px rgba(17, 19, 21, 0.04);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #475569;
+    color: #111315;
     transition: all 0.2s ease;
     cursor: pointer;
   }
 
   .btn-synthex-icon:hover {
-    background: #ffffff;
-    color: #0f172a;
+    background: #f4f6f2;
     transform: translateY(-1px);
-    box-shadow: 0 8px 16px -3px rgba(15, 23, 42, 0.08);
+    box-shadow: 0 4px 12px rgba(17, 19, 21, 0.08);
   }
 
-  /* Synthex Frosted Input Box */
+  /* Clean Input Box */
   .input-synthex,
   .input-3d {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.95);
-    border-bottom: 1px solid rgba(203, 213, 225, 0.7);
-    color: #0f172a;
-    box-shadow:
-      inset 0 1px 3px rgba(15, 23, 42, 0.04),
-      0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    background: #ffffff;
+    border: 1px solid #e8ece5;
+    color: #111315;
+    box-shadow: inset 0 1px 2px rgba(17, 19, 21, 0.03);
     transition: all 0.2s ease;
   }
 
   .input-synthex:focus,
   .input-3d:focus {
     background: #ffffff;
-    border-color: rgba(99, 102, 241, 0.6);
-    box-shadow:
-      0 0 0 3px rgba(99, 102, 241, 0.12),
-      0 4px 12px -2px rgba(15, 23, 42, 0.06);
+    border-color: #111315;
+    box-shadow: 0 0 0 3px rgba(17, 19, 21, 0.08);
     outline: none;
   }
 
   /* Segmented Pill Group Container */
   .pill-group {
-    background: rgba(226, 232, 240, 0.55);
+    background: #eef2ec;
     padding: 0.25rem;
     border-radius: 9999px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    border: 1px solid #e2e8df;
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;

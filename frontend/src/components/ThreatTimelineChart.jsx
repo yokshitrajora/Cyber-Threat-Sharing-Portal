@@ -24,42 +24,42 @@ export default function ThreatTimelineChart() {
   }, []);
 
   return (
-    <div className="card-glass rounded-[28px] p-6 sm:p-7 space-y-6">
+    <div className="bg-white rounded-[32px] p-6 border border-[#e8ece5] shadow-xs space-y-5">
       
-      {/* Chart Header & Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/60 pb-5">
+      {/* Chart Header & Controls matching Statistics Card in Reference UI */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#e8ece5] pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-            <h3 className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
-              24-Hour Threat Ingestion & Anomaly Timeline
+            <span className="w-7 h-7 rounded-full bg-[#f4f6f2] flex items-center justify-center text-xs">📊</span>
+            <h3 className="text-base font-extrabold text-[#111315] tracking-tight font-sans">
+              Statistics
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">Real-time threat detection volume telemetry over 24-hour cycle.</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Threat operations vs data transfer telemetry</p>
         </div>
 
         {/* Legend & Filter pills */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-3 text-[11px] font-sans font-medium">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
-              Anomalies
+          <div className="flex items-center gap-3 text-xs font-sans font-medium">
+            <span className="flex items-center gap-1.5 text-[#111315] font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#111315]"></span>
+              Operations
             </span>
-            <span className="flex items-center gap-1.5 text-rose-600">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
-              Blocked
+            <span className="flex items-center gap-1.5 text-slate-700 font-semibold">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#dbf65f] border border-[#cbe64c]"></span>
+              Data Transfer
             </span>
           </div>
 
-          <div className="flex bg-slate-100 p-1 border border-slate-200/80 rounded-full text-xs font-sans">
+          <div className="flex bg-[#f4f6f2] p-1 border border-[#e8ece5] rounded-full text-xs font-sans">
             {['24h', '7d', '30d'].map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   timeframe === t 
-                    ? 'bg-slate-900 text-white shadow-xs' 
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#111315] text-white shadow-2xs' 
+                    : 'text-slate-600 hover:text-black'
                 }`}
               >
                 {t}
@@ -69,28 +69,28 @@ export default function ThreatTimelineChart() {
         </div>
       </div>
 
-      {/* Recharts Area Spline Chart */}
-      <div className="h-72 w-full pt-2">
+      {/* Recharts Area Spline Chart with Charcoal and Lime Gradients */}
+      <div className="h-64 w-full pt-2">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <defs>
-              <linearGradient id="indigoGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0.0} />
+              <linearGradient id="charcoalGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#111315" stopOpacity={0.3} />
+                <stop offset="95%" stopColor="#111315" stopOpacity={0.0} />
               </linearGradient>
-              <linearGradient id="roseGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.2} />
-                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+              <linearGradient id="limeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#dbf65f" stopOpacity={0.45} />
+                <stop offset="95%" stopColor="#dbf65f" stopOpacity={0.02} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.2)" />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f3ed" />
             
             <XAxis 
               dataKey="time" 
               axisLine={false} 
               tickLine={false} 
-              tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'sans-serif' }} 
+              tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'sans-serif' }} 
               dy={8} 
             />
             
@@ -98,44 +98,43 @@ export default function ThreatTimelineChart() {
               axisLine={false} 
               tickLine={false} 
               allowDecimals={false} 
-              tick={{ fill: '#64748b', fontSize: 11, fontFamily: 'sans-serif' }} 
+              tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'sans-serif' }} 
             />
 
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                backdropFilter: 'blur(12px)',
-                borderRadius: '16px', 
-                border: '1px solid rgba(226, 232, 240, 0.9)', 
-                color: '#0f172a', 
+                backgroundColor: '#ffffff', 
+                borderRadius: '18px', 
+                border: '1px solid #e8ece5', 
+                color: '#111315', 
                 fontSize: '12px', 
                 fontFamily: 'sans-serif',
-                boxShadow: '0 12px 30px -5px rgba(15, 23, 42, 0.1)'
+                boxShadow: '0 12px 30px -5px rgba(17, 19, 21, 0.08)'
               }}
             />
 
             <Area 
               type="monotone" 
               dataKey="anomaly" 
-              name="Anomalous Traffic" 
-              stroke="#6366f1" 
+              name="Operations Volume" 
+              stroke="#111315" 
               strokeWidth={2.5} 
-              dot={{ r: 3, fill: '#6366f1', strokeWidth: 2, stroke: '#ffffff' }}
-              activeDot={{ r: 5, fill: '#6366f1' }}
+              dot={{ r: 3, fill: '#111315', strokeWidth: 2, stroke: '#ffffff' }}
+              activeDot={{ r: 5, fill: '#111315' }}
               fillOpacity={1} 
-              fill="url(#indigoGradient)" 
+              fill="url(#charcoalGradient)" 
             />
 
             <Area 
               type="monotone" 
               dataKey="blocked" 
-              name="Blocked Attacks" 
-              stroke="#f43f5e" 
+              name="Data Transfer Probe" 
+              stroke="#8ba615" 
               strokeWidth={2} 
-              dot={{ r: 3, fill: '#f43f5e', strokeWidth: 2, stroke: '#ffffff' }}
-              activeDot={{ r: 5, fill: '#f43f5e' }}
+              dot={{ r: 3, fill: '#dbf65f', strokeWidth: 2, stroke: '#111315' }}
+              activeDot={{ r: 5, fill: '#dbf65f' }}
               fillOpacity={1} 
-              fill="url(#roseGradient)" 
+              fill="url(#limeGradient)" 
             />
           </AreaChart>
         </ResponsiveContainer>

@@ -27,21 +27,21 @@ export default function RiskDistributionChart() {
   }, []);
 
   return (
-    <div className="card-glass rounded-[28px] p-6 space-y-5">
+    <div className="bg-white rounded-[32px] p-6 border border-[#e8ece5] shadow-xs space-y-5">
       
-      <div className="border-b border-slate-200/60 pb-4 flex justify-between items-center">
+      <div className="border-b border-[#e8ece5] pb-4 flex justify-between items-center">
         <div>
           <div className="flex items-center gap-1.5">
-            <h3 className="text-base font-extrabold text-slate-900 tracking-tight font-sans">
+            <h3 className="text-base font-extrabold text-[#111315] tracking-tight font-sans">
               Vector Classification
             </h3>
             {isLive && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="Live SQLite Data"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#dbf65f]" title="Live Database Telemetry"></span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">Threat distribution across active vectors.</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Threat distribution across active vectors</p>
         </div>
-        <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-white/80 text-slate-600 border border-slate-200 font-bold shadow-xs">
+        <span className="text-[10px] font-mono px-3 py-1 rounded-full bg-[#f4f6f2] text-slate-700 border border-[#e8ece5] font-bold">
           {categories.length} Categories
         </span>
       </div>

@@ -135,21 +135,21 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
   };
 
   return (
-    <div className="card-glass rounded-[28px] p-6 sm:p-7 space-y-6">
+    <div className="bg-white rounded-[32px] p-6 sm:p-7 border border-[#e8ece5] shadow-xs space-y-6">
 
       {/* Table Header & Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-200/60 pb-5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[#e8ece5] pb-5">
         <div>
           <div className="flex items-center gap-2.5">
-            <h3 className="text-base font-extrabold text-slate-900 tracking-tight font-sans flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
+            <h3 className="text-base font-extrabold text-[#111315] tracking-tight font-sans flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#dbf65f]"></span>
               Live Threat Stream & Incident Log
             </h3>
-            <span className="text-[11px] font-sans px-3 py-0.5 rounded-full bg-slate-100 text-slate-700 font-bold border border-slate-200">
+            <span className="text-[11px] font-sans px-3 py-0.5 rounded-full bg-[#f4f6f2] text-slate-700 font-bold border border-[#e8ece5]">
               {filteredIncidents.length} Active Records
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1 font-sans">
+          <p className="text-xs text-slate-400 mt-1 font-sans">
             Continuous threat telemetry parsed and classified by Shield AI Neural Engine.
           </p>
         </div>
@@ -161,19 +161,19 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="Search indicator, ID, location..."
-              className="w-full px-3.5 py-1.5 input-synthex rounded-full text-xs text-slate-800 placeholder-slate-400 font-sans"
+              className="w-full px-3.5 py-1.5 bg-[#f8faf7] border border-[#e8ece5] rounded-full text-xs text-slate-800 placeholder-slate-400 font-sans focus:outline-none focus:border-[#111315]"
             />
           </div>
 
-          <div className="pill-group">
+          <div className="flex bg-[#f4f6f2] p-1 border border-[#e8ece5] rounded-full text-xs font-sans">
             {['ALL', 'Critical', 'High', 'Medium', 'Low'].map((sev) => (
               <button
                 key={sev}
                 onClick={() => setFilterSeverity(sev)}
                 className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
                   filterSeverity === sev
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-[#111315] text-white shadow-2xs'
+                    : 'text-slate-600 hover:text-black'
                 }`}
               >
                 {sev}
@@ -184,10 +184,10 @@ export default function IncidentStreamTable({ extraThreats = [], onUpdateStatus,
       </div>
 
       {/* Main Data Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-200/70 bg-white/50 backdrop-blur-md shadow-xs">
+      <div className="overflow-x-auto rounded-2xl border border-[#e8ece5] bg-white shadow-2xs">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-100/60 text-slate-500 text-[11px] font-sans uppercase font-bold tracking-wider border-b border-slate-200/70">
+            <tr className="bg-[#f8faf7] text-slate-700 text-[11px] font-sans uppercase font-bold tracking-wider border-b border-[#e8ece5]">
               <th className="py-3.5 px-4">Severity</th>
               <th className="py-3.5 px-4">Incident ID</th>
               <th className="py-3.5 px-4">Indicator String</th>
