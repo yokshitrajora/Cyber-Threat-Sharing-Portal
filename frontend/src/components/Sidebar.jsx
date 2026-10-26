@@ -22,39 +22,30 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
     const updateStickyPosition = () => {
       if (!cardRef.current || !asideRef.current || !wrapperRef.current) return;
 
-      // On mobile screens, keep standard flow inside the offcanvas drawer
+      // Mobile drawer: normal flow
       if (window.innerWidth < 1024) {
         cardRef.current.style.transform = 'none';
         return;
-      }
+    }
 
-      const asideEl = asideRef.current;
-      const cardEl = cardRef.current;
-      const wrapperEl = wrapperRef.current;
+    const asideEl = asideRef.current;
+    const cardEl = cardRef.current;
+    const wrapperEl = wrapperRef.current;
 
-      const asideRect = asideEl.getBoundingClientRect();
-      const asideHeight = asideEl.offsetHeight;
-      const cardHeight = cardEl.offsetHeight;
+    // How far the page has scrolled past the top of the sidebar
+    const scrolled = Math.max(0, -asideEl.getBoundingClientRect().top);
 
-      // Natural starting top of the card wrapper right below Telemetry Engine
-      const minTop = wrapperEl.offsetTop;
+    // Natural position: right under Telemetry Engine
+    const minTop = wrapperEl.offsetTop;
 
-      // Upper bound so the card never overflows past the bottom of the sidebar
-      const maxTop = Math.max(minTop, asideHeight - cardHeight - 20);
+    // Furthest it can travel without leaving the sidebar
+    const maxOffset = Math.max(
+      0,
+      asideEl.offsetHeight - cardEl.offsetHeight - 20 - minTop
+    );
 
-      // Distance from top of aside to bottom of current viewport
-      const viewportBottomInAside = window.innerHeight - asideRect.top;
-
-      // Desired top position: keep card pinned 20px above the bottom of the viewport
-      const targetTop = viewportBottomInAside - cardHeight - 20;
-
-      // Clamp between minTop (never overlaps nav/telemetry) and maxTop (never leaves container)
-      const finalTop = Math.min(Math.max(minTop, targetTop), maxTop);
-
-      // Calculate hardware-accelerated transform offset from natural starting point
-      const offset = Math.max(0, finalTop - minTop);
-
-      cardEl.style.transform = `translate3d(0, ${offset}px, 0)`;
+    const offset = Math.min(scrolled, maxOffset);
+    cardEl.style.transform = `translate3d(0, ${offset}px, 0)`;
     };
 
     const handleScrollOrResize = () => {
@@ -268,43 +259,43 @@ export default function Sidebar({ isOpen, onClose, userRole }) {
               </div>
             </div>
           </div>
-
-        </div>
-
-        {/* Bottom Operator Profile Card - Sticky moving down as user scrolls */}
-        <div className="sticky bottom-4 mx-3.5 z-30 mt-auto pt-3 pb-1">
-          <div className="flex flex-col gap-2 p-2.5 rounded-2xl bg-[#191c20] border border-white/5 shadow-2xl">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 border-2 border-white/20 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                {(user?.username || 'U')[0].toUpperCase()}
-              </div>
-              <div className="flex-1 truncate">
-                <span className="block text-xs font-bold text-white truncate">
-                  {user?.username || roleInfo.name}
-                </span>
-                <span className="block text-[10px] font-sans text-slate-400 truncate">
-                  {roleInfo.sub}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-1.5 pt-1">
-              <span className={`flex-1 text-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${
-                userRole === 'sys_admin' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
-                userRole === 'org_admin' ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' :
-                'bg-[#dbf65f]/10 text-[#dbf65f] border-[#dbf65f]/30'
-              }`}>
-                {userRole}
-              </span>
-            </div>
-            <button
-              onClick={logout}
-              className="w-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-[10px] font-bold py-1 transition-colors cursor-pointer"
+          <div ref={wrapperRef}>
+            <div
+              ref={cardRef}
+              className="flex flex-col gap-2 p-2.5 rounded-2xl bg-[#191c20] border border-white/5 shadow-2xl will-change-transform"
             >
-              Sign Out
-            </button>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 border-2 border-white/20 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                  {(user?.username || 'U')[0].toUpperCase()}
+                </div>
+                <div className="flex-1 truncate">
+                  <span className="block text-xs font-bold text-white truncate">
+                    {user?.username || roleInfo.name}
+                  </span>
+                  <span className="block text-[10px] font-sans text-slate-400 truncate">
+                    {roleInfo.sub}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className={`flex-1 text-center text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-lg border ${
+                  userRole === 'sys_admin' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
+                  userRole === 'org_admin' ? 'bg-purple-500/10 text-purple-300 border-purple-500/30' :
+                  'bg-[#dbf65f]/10 text-[#dbf65f] border-[#dbf65f]/30'
+                }`}>
+                  {userRole}
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="w-full bg-white/5 border border-white/10 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl text-[10px] font-bold py-1 transition-colors cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
-        </div>
 
+        </div>
       </aside>
     </>
   );
