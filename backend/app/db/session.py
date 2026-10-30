@@ -8,7 +8,7 @@ from app.db.base import Base
 
 logger = logging.getLogger("shield.db")
 
-# Configure database engine with support for Railway postgres:// URL format
+# Configure database engine with support for standard postgresql:// URL format
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
