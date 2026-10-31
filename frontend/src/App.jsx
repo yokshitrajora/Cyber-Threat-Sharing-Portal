@@ -8,7 +8,6 @@ import Landing from './pages/Landing';
 import Console from './pages/Console';
 import ReportForm from './pages/ReportForm';
 import LiveFeed from './pages/LiveFeed';
-import Analytics from './pages/Analytics';
 import ThreatMapPage from './pages/ThreatMapPage';
 import AdminPanel from './pages/AdminPanel';
 import OrgDashboard from './pages/OrgDashboard';
@@ -44,7 +43,7 @@ function ProtectedApp() {
     <BrowserRouter>
       <div className="min-h-screen bg-[#9ea89e] text-[#111315] font-sans p-2 sm:p-5 flex items-center justify-center">
         {/* Main Rounded App Container matching Reference UI */}
-        <div className="w-full max-w-[1580px] bg-[#f8faf7] rounded-[32px] sm:rounded-[44px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.22)] border border-white/50 overflow-hidden flex min-h-[calc(100vh-2.5rem)] relative">
+        <div className="w-full max-w-[1580px] bg-[#f8faf7] rounded-[32px] sm:rounded-[44px] shadow-[0_25px_70px_-15px_rgba(0,0,0,0.22)] border border-white/50 overflow-clip flex min-h-[calc(100vh-2.5rem)] relative">
           
           <Sidebar
             isOpen={sidebarOpen}
@@ -74,7 +73,7 @@ function ProtectedApp() {
                 />
                 <Route
                   path="/analytics"
-                  element={<Analytics />}
+                  element={<Navigate to="/" replace />}
                 />
                 <Route
                   path="/map"

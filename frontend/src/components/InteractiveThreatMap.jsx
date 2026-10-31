@@ -142,11 +142,13 @@ export default function InteractiveThreatMap() {
       attributionControl: false
     });
 
-    // Elegant Voyager / Positron tile layer for high-contrast threat pins
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // High-performance OpenStreetMap tile layer (default subdomains a, b, c)
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      subdomains: 'abcd',
-    }).addTo(map);
+      subdomains: ['a', 'b', 'c'],
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    tiles.addTo(map);
 
     // Add zoom control top-right
     L.control.zoom({ position: 'topright' }).addTo(map);
@@ -156,7 +158,33 @@ export default function InteractiveThreatMap() {
     markersLayerRef.current = markersLayer;
     mapInstanceRef.current = map;
 
+    // Fire invalidateSize() at 100ms, 400ms and 900ms to cover slow layout reflows
+    // (grey tiles appear when the container has 0-height on first paint)
+    const t1 = setTimeout(() => { if (map) map.invalidateSize(); }, 100);
+    const t2 = setTimeout(() => { if (map) map.invalidateSize(); }, 400);
+    const t3 = setTimeout(() => { if (map) map.invalidateSize(); }, 900);
+
+    const handleWindowResize = () => {
+      if (map) map.invalidateSize();
+    };
+    window.addEventListener('resize', handleWindowResize);
+
+    // ResizeObserver watches the container for actual dimension changes
+    // (e.g. when a parent flex/grid finishes painting its tracks)
+    let ro;
+    if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+      ro = new ResizeObserver(() => {
+        if (map) map.invalidateSize();
+      });
+      ro.observe(mapContainerRef.current);
+    }
+
     return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      window.removeEventListener('resize', handleWindowResize);
+      if (ro) ro.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
