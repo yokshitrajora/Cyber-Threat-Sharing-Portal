@@ -140,8 +140,17 @@ class SecurityAlertService:
             logger.info(f"Email sent successfully to {to} (HTTP {resp.status_code})")
             return {"status": "sent", "to": to}
         except Exception as e:
-            logger.error(f"Failed to dispatch SendGrid Email to {to}: {e}")
-            return {"status": "failed", "to": to, "error": str(e)}
+            error_detail = str(e)
+            if hasattr(e, "body") and e.body:
+                try:
+                    if isinstance(e.body, bytes):
+                        error_detail = e.body.decode("utf-8")
+                    else:
+                        error_detail = str(e.body)
+                except Exception:
+                    pass
+            logger.error(f"Failed to dispatch SendGrid Email to {to}: {error_detail}")
+            return {"status": "failed", "to": to, "error": error_detail}
 
     @classmethod
     async def dispatch_incident_alert(
