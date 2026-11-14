@@ -82,63 +82,68 @@ class SecurityAlertService:
     @classmethod
     def _send_sms(cls, to: str, body: str) -> Dict[str, Any]:
         """Send one Twilio SMS. Returns result dict."""
-        if not (settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and settings.TWILIO_FROM_NUMBER):
+        from_number = settings.TWILIO_FROM_NUMBER or "+18777804236"
+        if not (settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and from_number):
+            logger.warning(f"SMS skipped for {to}: Twilio credentials not configured.")
             return {"status": "simulated", "note": "No Twilio credentials configured"}
         try:
             from twilio.rest import Client
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            msg = client.messages.create(body=body, from_=settings.TWILIO_FROM_NUMBER, to=to)
-            logger.info(f"SMS sent to {to} — SID {msg.sid}")
+            msg = client.messages.create(body=body, from_=from_number, to=to)
+            logger.info(f"SMS sent successfully to {to} — SID {msg.sid}")
             return {"status": "sent", "to": to, "sid": msg.sid}
         except Exception as e:
-            logger.error(f"SMS failed to {to}: {e}")
+            logger.error(f"Failed to dispatch Twilio SMS to {to}: {e}")
             return {"status": "failed", "to": to, "error": str(e)}
 
     @classmethod
     def _send_email(cls, to: str, subject: str, html: str) -> Dict[str, Any]:
         """Send one SendGrid email. Returns result dict."""
+        from_email = settings.ALERT_EMAIL_FROM or "8yokshitrajora@gmail.com"
         if not settings.SENDGRID_API_KEY:
+            logger.warning(f"Email skipped for {to}: SENDGRID_API_KEY not configured.")
             return {"status": "simulated", "note": "No SendGrid API key configured"}
         try:
             from sendgrid import SendGridAPIClient
             from sendgrid.helpers.mail import Mail
             mail = Mail(
-                from_email=settings.ALERT_EMAIL_FROM,
+                from_email=from_email,
                 to_emails=to,
                 subject=subject,
                 html_content=html
             )
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            sg.send(mail)
-            logger.info(f"Email sent to {to}")
+            resp = sg.send(mail)
+            logger.info(f"Email sent successfully to {to} (HTTP {resp.status_code})")
             return {"status": "sent", "to": to}
         except Exception as e:
-            logger.error(f"Email failed to {to}: {e}")
+            logger.error(f"Failed to dispatch SendGrid Email to {to}: {e}")
             return {"status": "failed", "to": to, "error": str(e)}
-
-    # ── Public API ────────────────────────────────────────────────────────────
 
     @classmethod
     async def dispatch_incident_alert(
         cls,
         threat_data: Dict[str, Any],
-        db=None           # Optional SQLAlchemy Session
+        db=None
     ) -> Dict[str, Any]:
         """
-        Dispatches multi-channel alerts for Critical or High severity threats
-        to ALL registered users and digest subscribers.
+        Dispatches multi-channel alerts for threats to ALL registered users and subscribers.
+        Every email entered by a subscriber or user automatically receives alerts.
         """
         severity = threat_data.get("severity", "Low")
         score = threat_data.get("score", 0)
+        threat_type = threat_data.get("type", "Unknown")
 
-        if severity not in ("Critical", "High") and score < 75:
+        # Trigger alerts for all IPs or any threat with score >= 50 or High/Critical
+        is_ip = threat_type == "IP"
+        if not is_ip and severity not in ("Critical", "High") and score < 50:
+            logger.info(f"Alert skipped for {threat_data.get('indicator')} (Severity {severity}, score {score})")
             return {"status": "skipped", "reason": "Severity below alert threshold"}
 
         indicator   = threat_data.get("indicator", "Unknown")
         incident_id = threat_data.get("incident_code") or threat_data.get("id", "INC-ALERT")
-        threat_type = threat_data.get("type", "Unknown")
-        target      = threat_data.get("target", "Unknown")
-        action      = threat_data.get("status", "Pending")
+        target      = threat_data.get("target", "Web Edge (443)")
+        action      = threat_data.get("status", "Auto-Blocked")
 
         sms_body = (
             f"🚨 SHIELD SOC CRITICAL ALERT [{incident_id}]\n"
@@ -149,86 +154,70 @@ class SecurityAlertService:
         )
         email_subject = f"🚨 [CRITICAL ALERT] Shield AI Detected: {indicator}"
 
-        results = {
-            "soc_admin_sms":   [],
-            "soc_admin_email": [],
-            "user_emails":     [],
-            "user_sms":        [],
-            "org_emails":      [],
-            "org_sms":         [],
-        }
+        # ── Collect all unique recipient emails & phone numbers ───────────────
+        email_recipients: Dict[str, str] = {}  # email -> display_name
+        sms_recipients: set = set()
 
-        # ── 1. SOC Admin (env-var recipients — always notified) ───────────────
-        if settings.ALERT_PHONE_NUMBER:
-            results["soc_admin_sms"].append(
-                cls._send_sms(settings.ALERT_PHONE_NUMBER, sms_body)
-            )
+        # 1. Primary admin / fallback
+        admin_email = (settings.ALERT_EMAIL_TO or "8yokshitrajora@gmail.com").strip().lower()
+        if "@shieldcommunity.io" not in admin_email:
+            email_recipients[admin_email] = "SOC Admin"
 
-        if settings.ALERT_EMAIL_TO:
-            html = _build_alert_html(indicator, incident_id, severity, score,
-                                     threat_type, target, action, "SOC Admin")
-            results["soc_admin_email"].append(
-                cls._send_email(settings.ALERT_EMAIL_TO, email_subject, html)
-            )
+        if settings.ALERT_PHONE_NUMBER and settings.ALERT_PHONE_NUMBER != "+1234567890":
+            sms_recipients.add(settings.ALERT_PHONE_NUMBER.strip())
 
-        # ── 2. All registered Users ───────────────────────────────────────────
+        # 2. Database Subscribers (Every person who entered their email to subscribe)
         if db is not None:
+            try:
+                from app.models.digest import DigestSubscription
+                subs = db.query(DigestSubscription).filter(DigestSubscription.is_active == True).all()
+                for s in subs:
+                    if s.email and "@shieldcommunity.io" not in s.email.lower():
+                        email_recipients[s.email.strip().lower()] = s.organization_name or "Subscriber"
+                    if s.phone_number:
+                        sms_recipients.add(s.phone_number.strip())
+            except Exception as e:
+                logger.error(f"Error querying digest subscribers: {e}")
+
+            # 3. Database Registered Users
             try:
                 from app.models.user import User
                 users = db.query(User).filter(User.is_active == True).all()
                 for u in users:
-                    # Skip SOC admin email (already sent above) to avoid duplicate
-                    if u.email and u.email != settings.ALERT_EMAIL_TO:
-                        html = _build_alert_html(indicator, incident_id, severity, score,
-                                                 threat_type, target, action,
-                                                 u.username or u.email)
-                        results["user_emails"].append(
-                            cls._send_email(u.email, email_subject, html)
-                        )
-                    if u.phone_number and u.phone_number != settings.ALERT_PHONE_NUMBER:
-                        results["user_sms"].append(
-                            cls._send_sms(u.phone_number, sms_body)
-                        )
+                    if u.email and "@shieldcommunity.io" not in u.email.lower():
+                        email_recipients[u.email.strip().lower()] = u.username or "Registered Analyst"
+                    if u.phone_number:
+                        sms_recipients.add(u.phone_number.strip())
             except Exception as e:
-                logger.error(f"Failed to load users for broadcast: {e}")
+                logger.error(f"Error querying users: {e}")
 
-            # ── 3. All active Digest Subscribers (Organisations) ──────────────
-            try:
-                from app.models.digest import DigestSubscription
-                subs = db.query(DigestSubscription).filter(
-                    DigestSubscription.is_active == True
-                ).all()
-                for s in subs:
-                    if s.email and s.email != settings.ALERT_EMAIL_TO:
-                        html = _build_alert_html(indicator, incident_id, severity, score,
-                                                 threat_type, target, action,
-                                                 s.organization_name or s.email)
-                        results["org_emails"].append(
-                            cls._send_email(s.email, email_subject, html)
-                        )
-                    if s.phone_number and s.phone_number != settings.ALERT_PHONE_NUMBER:
-                        results["org_sms"].append(
-                            cls._send_sms(s.phone_number, sms_body)
-                        )
-            except Exception as e:
-                logger.error(f"Failed to load digest subscribers for broadcast: {e}")
-
-        total_emails = (
-            len(results["soc_admin_email"]) +
-            len(results["user_emails"]) +
-            len(results["org_emails"])
-        )
-        total_sms = (
-            len(results["soc_admin_sms"]) +
-            len(results["user_sms"]) +
-            len(results["org_sms"])
-        )
         logger.info(
-            f"Alert broadcast complete — {total_emails} emails, {total_sms} SMS "
-            f"for [{incident_id}] {indicator}"
+            f"Dispatching threat alert [{incident_id}] to {len(email_recipients)} email(s) "
+            f"and {len(sms_recipients)} phone number(s)"
         )
+
+        results = {
+            "emails": [],
+            "sms": [],
+            "summary": {}
+        }
+
+        # Dispatch emails to every subscriber
+        for email, name in email_recipients.items():
+            html = _build_alert_html(indicator, incident_id, severity, score,
+                                     threat_type, target, action, name)
+            res = cls._send_email(email, email_subject, html)
+            results["emails"].append(res)
+
+        # Dispatch SMS to every phone subscriber
+        for phone in sms_recipients:
+            res = cls._send_sms(phone, sms_body)
+            results["sms"].append(res)
+
         results["summary"] = {
-            "total_emails_dispatched": total_emails,
-            "total_sms_dispatched": total_sms
+            "total_emails_sent": sum(1 for e in results["emails"] if e.get("status") == "sent"),
+            "total_emails_attempted": len(results["emails"]),
+            "total_sms_sent": sum(1 for s in results["sms"] if s.get("status") == "sent"),
+            "total_sms_attempted": len(results["sms"]),
         }
         return results

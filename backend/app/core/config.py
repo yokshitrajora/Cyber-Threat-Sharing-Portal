@@ -36,12 +36,12 @@ class Settings(BaseSettings):
     # Alerting Services (Twilio SMS & SendGrid Email)
     TWILIO_ACCOUNT_SID: Optional[str] = os.getenv("TWILIO_ACCOUNT_SID", "")
     TWILIO_AUTH_TOKEN: Optional[str] = os.getenv("TWILIO_AUTH_TOKEN", "")
-    TWILIO_FROM_NUMBER: Optional[str] = os.getenv("TWILIO_FROM_NUMBER", "+1234567890")
-    ALERT_PHONE_NUMBER: Optional[str] = os.getenv("ALERT_PHONE_NUMBER", "+1234567890")
+    TWILIO_FROM_NUMBER: Optional[str] = os.getenv("TWILIO_FROM_NUMBER", "+18777804236")
+    ALERT_PHONE_NUMBER: Optional[str] = os.getenv("ALERT_PHONE_NUMBER", "")
 
     SENDGRID_API_KEY: Optional[str] = os.getenv("SENDGRID_API_KEY", "")
-    ALERT_EMAIL_FROM: Optional[str] = os.getenv("ALERT_EMAIL_FROM", "alerts@shieldcommunity.io")
-    ALERT_EMAIL_TO: Optional[str] = os.getenv("ALERT_EMAIL_TO", "soc-team@shieldcommunity.io")
+    ALERT_EMAIL_FROM: Optional[str] = os.getenv("ALERT_EMAIL_FROM", "8yokshitrajora@gmail.com")
+    ALERT_EMAIL_TO: Optional[str] = os.getenv("ALERT_EMAIL_TO", "8yokshitrajora@gmail.com")
 
     # CORS settings
     CORS_ORIGINS: List[str] = [

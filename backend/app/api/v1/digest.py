@@ -58,6 +58,31 @@ def subscribe_to_weekly_digest(
     db.add(new_sub)
     db.commit()
     db.refresh(new_sub)
+
+    # Immediately dispatch confirmation email & SMS so the subscriber knows alerts are active
+    try:
+        from app.services.notifier import SecurityAlertService
+        if payload.email:
+            welcome_html = f"""
+            <h2>🛡️ Shield AI Alerts: Subscription Confirmed</h2>
+            <p>Hello <strong>{payload.organization_name}</strong>,</p>
+            <p>Your email <code>{payload.email}</code> is now registered in our active threat intelligence system.</p>
+            <p>Whenever a malicious IP address or high-severity cyber attack is detected, you will automatically receive an incident alert directly to this email address.</p>
+            <p>Stay safe,<br><strong>Shield AI SOC Defense Team</strong></p>
+            """
+            SecurityAlertService._send_email(
+                payload.email,
+                "🛡️ [Confirmed] Shield AI Real-Time Cyber Threat Alerts Active",
+                welcome_html
+            )
+        if payload.phone_number:
+            SecurityAlertService._send_sms(
+                payload.phone_number,
+                f"🛡️ Shield AI: {payload.organization_name} is now registered! You will receive instant SMS alerts whenever malicious IPs or critical threats are detected."
+            )
+    except Exception as e:
+        logger.warning(f"Could not dispatch subscriber welcome notification: {e}")
+
     return new_sub
 
 @router.get("/subscribers", response_model=List[DigestSubscriptionResponse])

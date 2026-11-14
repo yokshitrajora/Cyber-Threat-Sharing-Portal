@@ -174,10 +174,10 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
         <div className="lg:col-span-7 rounded-2xl bg-white/60 border border-slate-200/80 p-5 space-y-4">
           <div className="border-b border-slate-200/60 pb-3">
             <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider font-sans">
-              Subscribe a Local Business or Department
+              Subscribe for Instant Threat Alerts & Weekly Digest
             </h4>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              Receive concise automated reports: "3 phishing campaigns and 12 malicious IPs blocked in your area this week."
+              Enter your email and phone number to automatically receive real-time SMS & email alerts whenever malicious IPs or cyber threats are detected.
             </p>
           </div>
 
@@ -248,7 +248,7 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
               disabled={loading}
               className="w-full btn-synthex-primary py-2.5 px-4 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer disabled:opacity-50"
             >
-              {loading ? 'Subscribing...' : 'Register for Weekly Cyber Digest'}
+              {loading ? 'Subscribing...' : '🔔 Subscribe for Instant Alerts & Weekly Digest'}
             </button>
           </form>
         </div>
