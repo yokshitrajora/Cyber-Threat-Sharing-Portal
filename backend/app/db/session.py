@@ -56,9 +56,24 @@ def run_migrations():
                     conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'standard'"))
                 if "organization" not in users_cols:
                     conn.execute(text("ALTER TABLE users ADD COLUMN organization VARCHAR(100)"))
+                if "phone_number" not in users_cols:
+                    conn.execute(text("ALTER TABLE users ADD COLUMN phone_number VARCHAR(30)"))
                 conn.commit()
         except Exception as e:
             logger.warning(f"User schema migration check note: {e}")
+
+        # Check digest_subscriptions phone_number column
+        try:
+            digest_cols = []
+            if db_url.startswith("sqlite"):
+                res = conn.execute(text("PRAGMA table_info(digest_subscriptions)"))
+                digest_cols = [r[1] for r in res.fetchall()]
+            if digest_cols:
+                if "phone_number" not in digest_cols:
+                    conn.execute(text("ALTER TABLE digest_subscriptions ADD COLUMN phone_number VARCHAR(30)"))
+                conn.commit()
+        except Exception as e:
+            logger.warning(f"Digest schema migration check note: {e}")
 
         # Check threat_incidents columns
         try:
@@ -85,6 +100,19 @@ def run_migrations():
                 conn.commit()
         except Exception as e:
             logger.warning(f"Threat schema migration check note: {e}")
+
+        # PostgreSQL: safe ALTER COLUMN IF NOT EXISTS for phone_number fields
+        if not db_url.startswith("sqlite"):
+            try:
+                conn.execute(text(
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30)"
+                ))
+                conn.execute(text(
+                    "ALTER TABLE digest_subscriptions ADD COLUMN IF NOT EXISTS phone_number VARCHAR(30)"
+                ))
+                conn.commit()
+            except Exception as e:
+                logger.warning(f"Postgres phone_number migration note: {e}")
 
 def init_db():
     """Initializes tables, migrates columns, and seeds demo users and digest subscribers."""

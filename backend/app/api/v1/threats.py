@@ -186,7 +186,7 @@ async def submit_threat_indicator(
         "type": ind_type,
         "target": threat_record.target,
         "status": initial_status
-    })
+    }, db=db)
 
     return serialize_threat(threat_record)
 
@@ -544,6 +544,7 @@ def override_false_positive(
 @router.post("/broadcast/emergency")
 async def broadcast_emergency_alert(
     payload: EmergencyAlertRequest,
+    db: Session = Depends(get_db),
     current_user: User = Depends(require_role(["org_admin", "sys_admin"]))
 ):
     """Broadcasts an emergency alert. Requires org_admin or sys_admin."""
@@ -555,7 +556,7 @@ async def broadcast_emergency_alert(
         "type": "Emergency Broadcast",
         "target": "All Systems",
         "status": "Active Alert"
-    })
+    }, db=db)
     return {
         "status": "broadcast_sent",
         "title": payload.title,

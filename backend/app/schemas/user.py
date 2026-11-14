@@ -8,6 +8,7 @@ class UserCreate(BaseModel):
     password: str = Field(..., min_length=6, max_length=100)
     role: Optional[str] = "standard"  # "standard", "org_admin", "sys_admin"
     organization: Optional[str] = None
+    phone_number: Optional[str] = None  # E.164 format e.g. +919876543210
 
 class UserLogin(BaseModel):
     username: str
@@ -19,6 +20,7 @@ class UserResponse(BaseModel):
     email: str
     role: str
     organization: Optional[str] = None
+    phone_number: Optional[str] = None
     is_active: bool
     is_superuser: bool
     created_at: Optional[datetime] = None

@@ -38,7 +38,7 @@ export default function Landing() {
   const { login, quickLogin, register, error, setError } = useAuth();
   const [selectedRole, setSelectedRole] = useState(null);
   const [mode, setMode] = useState('select'); // 'select' | 'login' | 'register'
-  const [formData, setFormData] = useState({ username: '', email: '', password: '', organization: '' });
+  const [formData, setFormData] = useState({ username: '', email: '', password: '', organization: '', phone_number: '' });
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -77,7 +77,8 @@ export default function Landing() {
         email: formData.email,
         password: formData.password,
         role: selectedRole?.id || 'standard',
-        organization: formData.organization
+        organization: formData.organization,
+        phone_number: formData.phone_number || null
       });
     } catch { /* error set via context */ }
     finally { setSubmitting(false); }
@@ -88,7 +89,7 @@ export default function Landing() {
     setSelectedRole(null);
     setError(null);
     setSuccessMsg('');
-    setFormData({ username: '', email: '', password: '', organization: '' });
+    setFormData({ username: '', email: '', password: '', organization: '', phone_number: '' });
   };
 
   return (
@@ -307,6 +308,19 @@ export default function Landing() {
                   className="w-full px-4 py-2.5 input-synthex rounded-2xl text-xs text-slate-800 font-sans"
                   placeholder="analyst@organization.com"
                   required
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  Phone Number <span className="text-slate-400 normal-case font-normal">(for SMS alerts — optional)</span>
+                </label>
+                <input
+                  type="tel"
+                  value={formData.phone_number}
+                  onChange={(e) => setFormData(f => ({ ...f, phone_number: e.target.value }))}
+                  className="w-full px-4 py-2.5 input-synthex rounded-2xl text-xs text-slate-800 font-sans"
+                  placeholder="+91XXXXXXXXXX  (include country code)"
                 />
               </div>
 

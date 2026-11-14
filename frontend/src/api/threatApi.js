@@ -68,11 +68,12 @@ export async function quickLogin(role) {
   return data;
 }
 
-export async function register({ username, email, password, role, organization }) {
+export async function register({ username, email, password, role, organization, phone_number }) {
   return await apiClient.post('/api/v1/auth/register', {
     username, email, password,
     role: role || 'standard',
-    organization: organization || ''
+    organization: organization || '',
+    phone_number: phone_number || null
   });
 }
 
@@ -184,11 +185,12 @@ export async function getThreatMapOrigins() {
 /**
  * Weekly Community Cyber-Threat Email Digest APIs
  */
-export async function subscribeWeeklyDigest({ email, organization_name, sector }) {
+export async function subscribeWeeklyDigest({ email, organization_name, sector, phone_number }) {
   return await apiClient.post('/api/v1/digest/subscribe', {
     email,
     organization_name,
-    sector: sector || 'General Business'
+    sector: sector || 'General Business',
+    phone_number: phone_number || null
   });
 }
 

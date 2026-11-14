@@ -9,6 +9,7 @@ class DigestSubscription(Base):
     email = Column(String(150), unique=True, index=True, nullable=False)
     organization_name = Column(String(150), nullable=False)
     sector = Column(String(100), default="General Business")  # Healthcare, Finance, Education, Retail, Local Gov
+    phone_number = Column(String(30), nullable=True)   # E.164 format e.g. +919876543210 — receives SMS alerts
     frequency = Column(String(50), default="weekly")
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

@@ -12,6 +12,7 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
   const [email, setEmail] = useState('');
   const [orgName, setOrgName] = useState('');
   const [sector, setSector] = useState('Retail & Small Business');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -52,11 +53,13 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
       const newSub = await subscribeWeeklyDigest({
         email: email.trim(),
         organization_name: orgName.trim(),
-        sector
+        sector,
+        phone_number: phoneNumber.trim() || null
       });
-      setMessage({ type: 'success', text: `Successfully registered ${orgName} for weekly threat briefings!` });
+      setMessage({ type: 'success', text: `Successfully registered ${orgName} for weekly threat briefings${phoneNumber ? ' + SMS alerts' : ''}!` });
       setEmail('');
       setOrgName('');
+      setPhoneNumber('');
       if (canManage) loadSubscribers();
     } catch (err) {
       setMessage({ type: 'error', text: err.message || 'Failed to subscribe' });
@@ -223,6 +226,19 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="security@yourlocalbusiness.com"
+                className="w-full px-3.5 py-2.5 input-synthex rounded-xl text-xs text-slate-800"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                Phone Number <span className="text-slate-400 normal-case font-normal">(for SMS alerts — optional)</span>
+              </label>
+              <input
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+91XXXXXXXXXX  (include country code)"
                 className="w-full px-3.5 py-2.5 input-synthex rounded-xl text-xs text-slate-800"
               />
             </div>

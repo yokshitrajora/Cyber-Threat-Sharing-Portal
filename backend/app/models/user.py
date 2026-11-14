@@ -11,6 +11,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="standard")  # standard, org_admin, sys_admin
     organization = Column(String(100), nullable=True)
+    phone_number = Column(String(30), nullable=True)   # E.164 format e.g. +919876543210
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

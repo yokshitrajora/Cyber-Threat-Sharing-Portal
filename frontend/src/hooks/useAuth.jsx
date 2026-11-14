@@ -61,10 +61,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const register = useCallback(async ({ username, email, password, role: chosenRole, organization }) => {
+  const register = useCallback(async ({ username, email, password, role: chosenRole, organization, phone_number }) => {
     setError(null);
     try {
-      const newUser = await apiRegister({ username, email, password, role: chosenRole, organization });
+      const newUser = await apiRegister({ username, email, password, role: chosenRole, organization, phone_number });
       // Auto-login after registration
       const data = await apiLogin({ username, password });
       setToken(data.access_token);

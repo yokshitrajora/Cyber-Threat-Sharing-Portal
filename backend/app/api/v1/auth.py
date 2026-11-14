@@ -37,6 +37,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
         hashed_password=get_password_hash(user_in.password),
         role=role,
         organization=user_in.organization or "",
+        phone_number=user_in.phone_number or None,
         is_active=True,
         is_superuser=(role == "sys_admin")
     )

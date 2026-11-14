@@ -36,15 +36,22 @@ def subscribe_to_weekly_digest(
             existing.is_active = True
             existing.organization_name = payload.organization_name
             existing.sector = payload.sector or existing.sector
+            existing.phone_number = payload.phone_number or existing.phone_number
             db.commit()
             db.refresh(existing)
             return existing
+        # Update phone number even if already active (allow users to add/change it)
+        if payload.phone_number:
+            existing.phone_number = payload.phone_number
+            db.commit()
+            db.refresh(existing)
         return existing
 
     new_sub = DigestSubscription(
         email=payload.email,
         organization_name=payload.organization_name,
         sector=payload.sector or "General Business",
+        phone_number=payload.phone_number or None,
         frequency="weekly",
         is_active=True
     )
