@@ -564,3 +564,58 @@ async def broadcast_emergency_alert(
         "dispatched_by": current_user.username,
         "channels": result
     }
+
+
+# ─── DIAGNOSTIC TEST ALERT DISPATCH ──────────────────────────────────────────
+
+from pydantic import BaseModel as PyBaseModel
+
+class DiagnosticTestRequest(PyBaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+@router.post("/test-alert")
+async def diagnostic_test_alert(payload: DiagnosticTestRequest):
+    """
+    Direct diagnostic test endpoint for SendGrid Email & Twilio SMS.
+    Returns live delivery status and exact API responses/errors.
+    """
+    from app.core.config import settings
+    target_email = payload.email or settings.ALERT_EMAIL_TO or "8yokshitrajora@gmail.com"
+    target_phone = payload.phone or settings.ALERT_PHONE_NUMBER or ""
+
+    diag = {
+        "credentials_status": {
+            "sendgrid_api_key_set": bool(settings.SENDGRID_API_KEY),
+            "twilio_account_sid_set": bool(settings.TWILIO_ACCOUNT_SID),
+            "twilio_auth_token_set": bool(settings.TWILIO_AUTH_TOKEN),
+            "alert_email_from": settings.ALERT_EMAIL_FROM or "8yokshitrajora@gmail.com",
+            "twilio_from_number": settings.TWILIO_FROM_NUMBER or "+18777804236",
+            "testing_recipient_email": target_email,
+            "testing_recipient_phone": target_phone
+        },
+        "email_delivery": None,
+        "sms_delivery": None
+    }
+
+    if target_email:
+        test_html = f"""
+        <h2>🛡️ Shield AI Alerts: Test Delivery Verified</h2>
+        <p>Your SendGrid email dispatch engine is <strong>working successfully!</strong></p>
+        <p><strong>Sender:</strong> {settings.ALERT_EMAIL_FROM or '8yokshitrajora@gmail.com'}<br>
+        <strong>Recipient:</strong> {target_email}</p>
+        <p>You will automatically receive real-time incident notifications when malicious IPs or threats are reported.</p>
+        """
+        diag["email_delivery"] = SecurityAlertService._send_email(
+            target_email,
+            "🛡️ [VERIFIED] Shield AI Real-time Cyber Threat Alert Service",
+            test_html
+        )
+
+    if target_phone:
+        diag["sms_delivery"] = SecurityAlertService._send_sms(
+            target_phone,
+            f"🛡️ Shield AI: Test SMS verified! Delivery from {settings.TWILIO_FROM_NUMBER or '+18777804236'} is operational."
+        )
+
+    return diag

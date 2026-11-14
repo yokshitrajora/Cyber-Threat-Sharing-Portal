@@ -223,4 +223,8 @@ export async function checkHealth() {
   return await apiClient.get('/api/v1/analytics/health');
 }
 
+export async function testAlert({ email, phone }) {
+  return await apiClient.post('/api/v1/threats/test-alert', { email, phone });
+}
+
 export default apiClient;

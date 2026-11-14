@@ -4,7 +4,8 @@ import {
   getDigestSubscribers,
   getDigestPreview,
   triggerWeeklyDigest,
-  unsubscribeDigest
+  unsubscribeDigest,
+  testAlert
 } from '../api/threatApi';
 
 export default function WeeklyEmailDigestPanel({ userRole }) {
@@ -23,8 +24,27 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
 
   // Broadcast
   const [broadcasting, setBroadcasting] = useState(false);
+  const [testingAlert, setTestingAlert] = useState(false);
+  const [testResult, setTestResult] = useState(null);
 
   const canManage = userRole === 'org_admin' || userRole === 'sys_admin';
+
+  const handleTestAlert = async () => {
+    setTestingAlert(true);
+    setTestResult(null);
+    setMessage(null);
+    try {
+      const res = await testAlert({
+        email: email.trim() || undefined,
+        phone: phoneNumber.trim() || undefined
+      });
+      setTestResult(res);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.message || 'Diagnostic test request failed' });
+    } finally {
+      setTestingAlert(false);
+    }
+  };
 
   useEffect(() => {
     if (canManage) {
@@ -127,7 +147,23 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleTestAlert}
+            disabled={testingAlert}
+            className="px-3.5 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5"
+            title="Sends an instant test email and SMS to test your configuration"
+          >
+            {testingAlert ? (
+              <>
+                <span className="w-3 h-3 border-2 border-indigo-600/30 border-t-indigo-600 rounded-full animate-spin"></span>
+                <span>Testing Dispatch...</span>
+              </>
+            ) : (
+              <span>⚡ Live Test Alert (Email & SMS)</span>
+            )}
+          </button>
+
           <button
             onClick={handleOpenPreview}
             className="px-3.5 py-1.5 rounded-full bg-white/80 border border-slate-200 text-slate-700 hover:bg-white text-xs font-bold transition shadow-xs cursor-pointer flex items-center gap-1.5"
@@ -164,6 +200,62 @@ export default function WeeklyEmailDigestPanel({ userRole }) {
             : 'bg-rose-50 text-rose-800 border border-rose-200'
         }`}>
           {message.type === 'success' ? '✓' : '⚠️'} {message.text}
+        </div>
+      )}
+
+      {/* Live Diagnostic Test Output Banner */}
+      {testResult && (
+        <div className="p-4 rounded-2xl bg-slate-900 text-white text-xs font-sans space-y-3 border border-slate-800 animate-in fade-in duration-200">
+          <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+            <span className="font-bold text-emerald-400">⚡ Live Alert Dispatch Diagnostics</span>
+            <button onClick={() => setTestResult(null)} className="text-slate-400 hover:text-white text-xs">✕ Close</button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Email Result */}
+            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+              <div className="font-bold flex items-center justify-between mb-1">
+                <span>📧 SendGrid Email:</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  testResult.email_delivery?.status === 'sent'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                }`}>
+                  {testResult.email_delivery?.status?.toUpperCase() || 'NO TARGET'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                To: <span className="font-mono text-white">{testResult.credentials_status?.testing_recipient_email}</span>
+              </p>
+              {testResult.email_delivery?.error && (
+                <p className="text-[10px] font-mono text-rose-400 mt-1 bg-rose-950/40 p-1.5 rounded border border-rose-800/40 break-all">
+                  ⚠️ Error: {testResult.email_delivery.error}
+                </p>
+              )}
+            </div>
+
+            {/* SMS Result */}
+            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60">
+              <div className="font-bold flex items-center justify-between mb-1">
+                <span>📱 Twilio SMS:</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  testResult.sms_delivery?.status === 'sent'
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                }`}>
+                  {testResult.sms_delivery?.status?.toUpperCase() || 'NO PHONE ENTERED'}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                To: <span className="font-mono text-white">{testResult.credentials_status?.testing_recipient_phone || 'None entered'}</span>
+              </p>
+              {testResult.sms_delivery?.error && (
+                <p className="text-[10px] font-mono text-rose-400 mt-1 bg-rose-950/40 p-1.5 rounded border border-rose-800/40 break-all">
+                  ⚠️ Error: {testResult.sms_delivery.error}
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
 

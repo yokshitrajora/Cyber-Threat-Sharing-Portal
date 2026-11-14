@@ -1,8 +1,25 @@
 import logging
+import re
 from typing import Dict, Any, List, Optional
 from app.core.config import settings
 
 logger = logging.getLogger("shield.alerts")
+
+def normalize_phone_number(phone: Optional[str]) -> Optional[str]:
+    """
+    Normalizes phone numbers to international E.164 format.
+    Automatically prepends +91 for 10-digit Indian numbers.
+    """
+    if not phone:
+        return None
+    clean = re.sub(r"[^\d+]", "", phone.strip())
+    # If 10 digits without country code, assume India (+91)
+    if len(clean) == 10 and not clean.startswith("+"):
+        return f"+91{clean}"
+    # If 11 or 12 digits without +
+    if len(clean) >= 11 and not clean.startswith("+"):
+        return f"+{clean}"
+    return clean
 
 # ─── HTML Alert Email Template ────────────────────────────────────────────────
 
@@ -83,18 +100,24 @@ class SecurityAlertService:
     def _send_sms(cls, to: str, body: str) -> Dict[str, Any]:
         """Send one Twilio SMS. Returns result dict."""
         from_number = settings.TWILIO_FROM_NUMBER or "+18777804236"
+        to_norm = normalize_phone_number(to)
+        if not to_norm or len(to_norm) < 11:
+            err = f"Invalid phone '{to}'. Phone number must have 10 digits with country code (e.g. +91 9990055090)."
+            logger.error(err)
+            return {"status": "failed", "to": to, "error": err}
+
         if not (settings.TWILIO_ACCOUNT_SID and settings.TWILIO_AUTH_TOKEN and from_number):
-            logger.warning(f"SMS skipped for {to}: Twilio credentials not configured.")
+            logger.warning(f"SMS skipped for {to_norm}: Twilio credentials not configured.")
             return {"status": "simulated", "note": "No Twilio credentials configured"}
         try:
             from twilio.rest import Client
             client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
-            msg = client.messages.create(body=body, from_=from_number, to=to)
-            logger.info(f"SMS sent successfully to {to} — SID {msg.sid}")
-            return {"status": "sent", "to": to, "sid": msg.sid}
+            msg = client.messages.create(body=body, from_=from_number, to=to_norm)
+            logger.info(f"SMS sent successfully to {to_norm} — SID {msg.sid}")
+            return {"status": "sent", "to": to_norm, "sid": msg.sid}
         except Exception as e:
-            logger.error(f"Failed to dispatch Twilio SMS to {to}: {e}")
-            return {"status": "failed", "to": to, "error": str(e)}
+            logger.error(f"Failed to dispatch Twilio SMS to {to_norm}: {e}")
+            return {"status": "failed", "to": to_norm, "error": str(e)}
 
     @classmethod
     def _send_email(cls, to: str, subject: str, html: str) -> Dict[str, Any]:

@@ -72,7 +72,8 @@ export default function InspectionPanel({ onThreatAdded }) {
 
       setThreatData('');
       setDescription('');
-    } catch {
+    } catch (err) {
+      console.error('Threat submission API failed:', err);
       const mockRecord = {
         id: `INC-${Math.floor(Math.random()*9000)+1000}`,
         indicator: sanitizationPreview?.sanitizedString || threatData,
